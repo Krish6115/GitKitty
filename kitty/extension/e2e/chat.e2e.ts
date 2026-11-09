@@ -26,6 +26,8 @@ export async function chatE2E(question = 'How do I undo a commit I already pushe
   const total = Date.now() - t0;
   const status = await panel.locator('.msg.kitty').last().getAttribute('data-status');
   if (status !== 'done') throw new Error(`answer status: ${status}`);
+  // Verify the copy button appears on the finished answer
+  await panel.locator('.msg.kitty [data-kitty="copy-answer"]').waitFor({ state: 'visible' });
   log(`answer: first text ${(first / 1000).toFixed(1)}s, total ${(total / 1000).toFixed(1)}s`);
   log(`inline citations: ${await panel.locator('.msg.kitty a.cite').count()}  sources: ${await panel.locator('.msg.kitty .sources li').count()}  code blocks: ${await panel.locator('.msg.kitty .code pre').count()}`);
   await panel.evaluate(() => document.querySelectorAll('details.sources').forEach((d) => d.setAttribute('open', '')));
