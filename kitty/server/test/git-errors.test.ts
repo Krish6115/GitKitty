@@ -23,6 +23,13 @@ describe('explain my mistake', () => {
     expect(id("error: The branch 'old-ui' is not fully merged.")).toBe('not-fully-merged');
   });
 
+  it('recognises checked-out branch, stale remote refs and upstream mismatch', () => {
+    expect(id("fatal: refusing to fetch into branch 'refs/heads/main' checked out at '/home/me/app'")).toBe('fetch-checked-out');
+    expect(diagnose("fatal: refusing to fetch into branch 'refs/heads/feature/login' checked out at '/home/me/app'")?.answer).toContain('git pull origin feature/login');
+    expect(id("error: cannot lock ref 'refs/remotes/origin/feature': 'refs/remotes/origin/feature/login' exists; cannot create 'refs/remotes/origin/feature'")).toBe('stale-remote-ref');
+    expect(id('fatal: The upstream branch of your current branch does not match the name of your current branch.')).toBe('upstream-mismatch');
+  });
+
   it('fills the real names into the commands', () => {
     const d = diagnose('fatal: The current branch feature/login has no upstream branch.');
     expect(d?.answer).toContain('git push -u origin feature/login');
