@@ -1,5 +1,6 @@
 // One Kitty answer in the chat: the answer, repo files it read, action cards (issue search, Copilot hand-off),
 // sources, flags and the per-answer tools (try it in Practice, ask Copilot).
+import { useState } from 'preact/hooks';
 import { actionLabel, stripAction, type PageAction } from '../shared/actions';
 import { sourceLabel, type ChatMessage } from '../shared/chat';
 import { copilotPrompt } from '../shared/copilot';
@@ -15,6 +16,7 @@ import { openCopilot, runOnPage, Thinking } from './chat-helpers';
 type Assistant = Extract<ChatMessage, { role: 'assistant' }>;
 
 export function AssistantMessage({ m, previous, page }: { m: Assistant; previous: ChatMessage | undefined; page: PageContext | null }) {
+  const [copied, setCopied] = useState(false);
   return (
         <div class="msg kitty" data-status={m.status}>
           {m.files && (
@@ -33,6 +35,13 @@ export function AssistantMessage({ m, previous, page }: { m: Assistant; previous
             const repo = page ? repoFromUrl(page.url) : null;
             return (
               <div class="answer-tools">
+                <button class="ghost small" data-kitty="copy-answer" aria-label="Copy answer" onClick={()=>{void navigator.clipboard.writeText(stripAction(m.content)).then(()=>{
+                  setCopied(true);
+                  setTimeout(()=> setCopied(false), 1200);
+                });
+                }}>
+                    <Icon name={copied ? 'check' : 'copy'} size={12} /> {copied ? 'Copied' : 'Copy answer'}
+                </button>
                 {sc && (
                   <button class="ghost small" data-kitty="try-practice" onClick={() => void chrome.storage.session.set({ [LEARN_FOCUS_KEY]: { view: 'practice', scenario: sc.id } satisfies LearnFocus, [SIDEPANEL_TAB_KEY]: 'learn' })}>
                     <Icon name="beaker" size={12} /> Try it safely: {sc.title}
