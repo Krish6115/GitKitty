@@ -156,7 +156,7 @@ export function ChatView() {
       <div class="messages" aria-live="polite">
         {messages.length === 0 && (
           <div class="muted">
-            <p>Ask me anything about Git or GitHub, or about the page you're looking at. I answer from Kitty's learning material and cite my sources.</p>
+            <p>Ask about Git, GitHub, or the page you have open. Answers link to the notes and docs they come from.</p>
             {[...(focusIndex !== null ? ['Explain this step in more detail', 'How does this file connect to the rest of the repo?'] : []), ...(page && readPage && focusIndex === null ? ['Explain this page', 'What should I look at first here?'] : []), 'How do I undo my last commit?', 'How do I sync my fork with upstream?', "What's the difference between merge and rebase?"].map((s) => (
               <button key={s} class="chip" onClick={() => void send(s)}>{s}</button>
             ))}

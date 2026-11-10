@@ -146,7 +146,7 @@ export function PreflightView({ state, onClose, onHint, target }: { state: ApiSt
           <ul class="checks">{passed.map((c) => <CheckItem key={c.id} check={c} onHint={onHint} />)}</ul>
         </details>
       )}
-      <p class="hint">Rule-based check: no AI tokens used.</p>
+      <p class="hint">These checks run on rules, not the AI model.</p>
       {target && <DraftPr owner={target.owner} repo={target.repo} pr={r.number} />}
       <div class="row"><button class="ghost" onClick={onClose}>Close</button></div>
     </div>

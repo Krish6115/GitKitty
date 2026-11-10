@@ -20,11 +20,11 @@ export function WelcomeView({ onDone }: { onDone: () => void }) {
   return (
     <section class="welcome">
       <h2>Hi, I'm Kitty</h2>
-      <p>I walk around GitHub with you: I give guided tours of repositories, answer Git questions, and explain commands, diffs and pull requests.</p>
+      <p>I live on github.com. I can tour a repository, answer Git questions, and explain commands, diffs and pull requests.</p>
 
       <h3>1. You're all set</h3>
       <form class="settings" onSubmit={(e) => { e.preventDefault(); void finish(); }}>
-        <p class="muted small">Kitty works out of the box: no account or setup needed.</p>
+        <p class="muted small">Kitty is ready to use. No account needed.</p>
         <ServerCheckButton url={DEFAULT_SERVER_URL} />
 
         <h3>2. Optional</h3>

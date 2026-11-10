@@ -1,7 +1,7 @@
 // Git path helpers: the skills a learner has asked about, the spaced-review quiz, and the chat's one-line summary.
 // Progress lives only in this browser (chrome.storage.local) and is never sent to the server.
 import { useEffect, useState } from 'preact/hooks';
-import { explored, nextSkill, recordTopics, SKILLS, SKILLS_KEY, type Progress } from '../shared/skills';
+import { nextSkill, recordTopics, SKILLS_KEY, type Progress } from '../shared/skills';
 import { answer, dueSkills, gitHealth, nextQuiz, REVIEW_KEY, type Review } from '../shared/review';
 import { QuizCard, useLocal } from './QuizCard';
 import { Icon } from '../shared/Icon';

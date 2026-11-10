@@ -34,7 +34,7 @@ export function Thinking() {
   return (
     <>
       <p class="thinking">Kitty is thinking{s >= 3 ? ` (${s}s)` : ''}</p>
-      {s >= 15 && <p class="muted small" data-kitty="slow">The AI model is slow right now. Kitty gives up after about 45 seconds and tells you.</p>}
+      {s >= 15 && <p class="muted small" data-kitty="slow">The model is slow right now. Kitty stops waiting after about 45 seconds.</p>}
     </>
   );
 }

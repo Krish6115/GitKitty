@@ -31,7 +31,7 @@ function ContextPack({ state }: { state: TourState }) {
   };
   return (
     <section class="context-pack" data-kitty="context-pack">
-      <p class="small">Handing this repo to an AI? Give it Kitty's map first.</p>
+      <p class="small">Using an AI assistant on this repo? Give it this summary first.</p>
       <div class="row">
         <button class="small" disabled={state.streaming} onClick={() => void navigator.clipboard.writeText(md()).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); })}>
           {copied ? 'Copied' : 'Copy context for your AI'}

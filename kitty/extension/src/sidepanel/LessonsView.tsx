@@ -45,7 +45,7 @@ function Lesson({ skill, saved, onProgress, onPractice, onBack }: { skill: Skill
       {at === 2 && (
         lesson.practice ? (
           <>
-            <p>Try it in a safe, simulated repo: nothing you type touches a real project.</p>
+            <p>This runs in a simulated repo, so nothing you type touches a real project.</p>
             <button data-kitty="lesson-practice" onClick={() => onPractice(lesson.practice as string)}><Icon name="beaker" size={14} /> Open in Practice</button>
           </>
         ) : (

@@ -57,7 +57,7 @@ export function AssistantMessage({ m, previous, page }: { m: Assistant; previous
           })()}
           {m.action?.type === 'copilot' && (
             <div class="action-card copilot-card" data-kitty="copilot-card">
-              <p><Icon name="copilot" size={14} /> Writing and changing code is GitHub Copilot's job. Kitty prepared the question:</p>
+              <p><Icon name="copilot" size={14} /> Kitty doesn't write code. Here's the request for GitHub Copilot:</p>
               <pre class="draft-text">{m.action.prompt}</pre>
               <div class="row">
                 <button class="small" data-kitty="ask-copilot" onClick={() => void openCopilot((m.action as { prompt: string }).prompt)}>Ask GitHub Copilot</button>
@@ -90,8 +90,8 @@ export function AssistantMessage({ m, previous, page }: { m: Assistant; previous
           )}
           {m.status === 'error' && <p class="error">{m.error}</p>}
           {m.instant && (m.diagnosis
-            ? <p class="muted small" data-kitty="diagnosis" title="Recognised by Kitty's rules for common Git errors"><Icon name="tools" size={12} /> Recognised Git error, instant</p>
-            : <p class="muted small" data-kitty="instant" title="A common question with a saved, checked answer from Kitty's sources"><Icon name="zap" size={12} /> Saved answer, instant</p>)}
+            ? <p class="muted small" data-kitty="diagnosis" title="Recognised by Kitty's rules for common Git errors"><Icon name="tools" size={12} /> Known Git error</p>
+            : <p class="muted small" data-kitty="instant" title="A common question with a saved, checked answer from Kitty's sources"><Icon name="zap" size={12} /> Saved answer</p>)}
           {m.status === 'stopped' && <p class="muted small">Stopped.</p>}
           {m.truncated && <p class="muted small">The answer hit its length limit and may be incomplete.</p>}
           {m.unverifiedFlags && m.unverifiedFlags.length > 0 && (

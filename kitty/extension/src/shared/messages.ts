@@ -27,7 +27,7 @@ export function errorText(code: string, fallback: string): string {
     case 'auth_failed':
       return 'The BharatCode key was rejected. Check it in Kitty settings.';
     case 'rate_limited':
-      return 'Too many tours right now. Wait a minute, or add your own key in Kitty settings.';
+      return 'Too many requests right now. Wait a minute, or add your own key in Kitty settings.';
     case 'github_rate_limited':
       return 'GitHub rate limit reached. Add a GitHub token in Kitty settings, or try again later.';
     case 'github_not_found':
@@ -39,7 +39,7 @@ export function errorText(code: string, fallback: string): string {
     case 'invalid_model_output':
       return `${fallback} Try again in a moment.`;
     case 'network':
-      return 'Kitty could not reach its server. Is it running? (Check the server URL in settings.)';
+      return 'Kitty couldn\'t reach its server. Check your connection and try again.';
     default:
       return fallback || 'Something went wrong.';
   }
