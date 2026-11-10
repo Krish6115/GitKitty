@@ -1,4 +1,4 @@
-# Knowledge audit (Phase 0.5)
+# Knowledge audit
 
 Audit of the learning PDFs Kitty will be grounded in, measured against the topic checklist
 for Kitty's tutor and repo-tour features. Text was extracted with PyMuPDF on 2026-11-02;
@@ -167,7 +167,7 @@ tags and mark every file "adapted" (CC BY requires saying what changed). Every f
 **Totals:** 24 topic files + `SOURCES.md`, estimated 40–55k words, which comes to roughly 100–130 chunks.
 Covered topics (#1, #3, #11, #14–#18, #20) get no new files; they're handled by the PDFs.
 
-### Ingest changes (done in Phase 1)
+### Ingest changes
 - `Git/references/**/*.md` and `Scenario-Based_Guide/references/**/*.md` are indexed alongside the PDFs.
 - `Git/Git_Github Notes.pdf` is indexed via its transcript (see §4).
 - Each chunk carries `{ sourceFile, sourceUrl, license }` so tutor answers can cite correctly.

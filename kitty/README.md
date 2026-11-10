@@ -1,51 +1,31 @@
-# 🐾 Kitty — your Git & GitHub companion
+# Kitty
 
-Kitty is a pixel cat that lives on **github.com** (Chrome extension) and turns GitKitty's learning material into help you can use while you work. It runs on the BharatCode model `qwen-3.8-27b`.
+Kitty is a Chrome extension (Manifest V3) plus a small Hono server. The extension adds a pixel cat to github.com; the server fetches context from GitHub, retrieves matching learning material, and calls BharatCode's `qwen-3.8-27b` model.
 
-| | What it does |
-|---|---|
-| 🗺️ **Tour this repo** | Click the cat on any repository. Kitty picks the files that map the project (README, how it's built, the entry point, the core modules one per area, tests, CI: 5 steps for small repos, up to 12 for big ones) and starts walking at once. The model's "what it is / why it matters" for each file streams in while you read. |
-| 💬 **Ask Kitty** | Side-panel chat. Answers are scenario-first (Situation → Commands → Why → How to undo) and cite their sources. It sees the page you're on, knows your tour step, and can send the cat: "find me a Docker issue", "tour pallets/flask" or "help me fix cli/cli#123" take your tab there and the cat takes over. |
-| 🔍 **Explain this** | Select a command, diff, PR text or code (or right-click it) for a short explanation. Commands get a risk label: *Safe*, *Rewrites history* or *Can lose work*. |
-| 🌱 **Find a good first issue** | On a repo page: open, unassigned issues ranked for newcomers (beginner labels, quiet threads, recent activity). No AI tokens. |
-| 🛠️ **Help me fix this issue** | On an issue page (or from the list above): Kitty walks you through the files most likely involved, explains what to look for in each, and gives you a fix plan plus exact git commands for your fork, a branch named after the issue, and the link that opens the PR form. |
-| ✈️ **Check my PR** | On a pull request: a pre-flight check for what maintainers send PRs back for (conflicts, out-of-date branch, empty or unfilled description, no linked issue, no tests, merge or WIP commits, and Conventional Commits or DCO sign-off when CONTRIBUTING asks), with a fix command for each. Rule-based, no AI tokens. |
+## Features
+
+| Feature | Where | Model calls |
+|---|---|---|
+| Repo tour | Cat menu on a repo page. Picks 5–12 files (README, build files, entry point, core modules, tests, CI) and explains each one. | Yes |
+| Issue walkthrough | Cat menu on an issue page. Files likely involved, plus git commands for your fork and branch. | Yes |
+| PR tour | Cat menu on a PR. Walks through the changed files and their diffs. | Yes |
+| Ask Kitty | Side panel chat. Cited answers; can read the open page and the repo's files; adapts to your level. | Yes, except saved answers and recognised Git errors |
+| Explain this | Select text on GitHub, or right-click. Commands get a risk label. | Yes |
+| Why did this fail? | Cat menu on a failed Actions run. | Yes, unless only an exit code is available |
+| Good first issues | Cat menu on a repo, or "find me an issue about X" in the chat. | No |
+| Check my PR | Cat menu on a PR: conflicts, description, linked issue, tests, commit hygiene, secrets and debug code in the diff. Optional drafted description. | Only for the draft |
+| Learn tab | Lessons, spaced-review quizzes, a Git simulator for practice, and a first-PR checklist. | No |
+| Show me how | Cat menu. Step-by-step pointers to GitHub's own buttons and tabs. | No |
+| Button hints | Hover buttons like *Sync fork* or *Squash and merge*. | No |
+| Copilot hand-off | Requests to write code are typed into GitHub Copilot's chat for you to review and send. | No |
 
 ## Install
 
-1. Download `kitty-extension-v0.8.0.zip` from the [latest release](https://github.com/Krish6115/GitKitty/releases/latest) and unzip it.
-2. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the folder.
-3. The welcome screen checks the server connection. Open any repo and click the cat.
+1. Download the zip from the [latest release](https://github.com/Krish6115/GitKitty/releases/latest) and unzip it.
+2. Open `chrome://extensions`, turn on Developer mode, click **Load unpacked** and pick the folder.
+3. Open a repository on github.com and click the cat.
 
-The release uses the hosted server at `https://kitty-server.vercel.app` (20 requests per minute per user). You can also add your own BharatCode key in **Settings**.
-
-## Run it locally
-
-```bash
-cd kitty
-npm ci
-cp server/.env.example server/.env   # add BHARATCODE_API_KEY, set LLM_PROVIDER=bharatcode
-npm run dev -w server                # http://localhost:8787 (mock model until LLM_PROVIDER=bharatcode)
-npm run build:e2e -w extension       # a build that talks to localhost; load kitty/extension/dist unpacked (plain build uses the hosted server)
-```
-
-| Command | What it does |
-|---|---|
-| `npm test` | 160+ unit tests (network disabled) |
-| `npm run eval -w ingest` | Retrieval quality check: 52 questions, target ≥ 85% hit@6 |
-| `npm run build-faq -w server` | Regenerate the saved instant answers (`server/data/faq.json`) with the real model |
-| `npm run ingest` | Rebuild the knowledge index from the PDFs and references |
-| `npm run e2e -w extension -- all` | Browser e2e suites ([details](extension/e2e/README.md)) |
-| `VITE_KITTY_SERVER_URL=<url> npm run package -w extension` | Build the release zip |
-
-## Host your own server (Vercel)
-
-- **Root directory:** `kitty/server`
-- **Framework:** Hono
-- **Install command:** `cd .. && npm ci -w server --include-workspace-root`
-- **Environment variables:** `LLM_PROVIDER=bharatcode`, `BHARATCODE_API_KEY`, and optionally `GITHUB_TOKEN`
-
-Then set the URL in Kitty's **Settings**.
+Release builds use the hosted server at `https://kitty-server.vercel.app` (20 requests per minute per IP). You can add your own BharatCode key in Settings.
 
 ## How it works
 
@@ -97,23 +77,57 @@ flowchart LR
   style SRV fill:#f0f7ff,stroke:#0969da,color:#0969da
 ```
 
-**How a request flows:** the cat or the side panel asks the service worker, which calls the Kitty server. The server pulls real context from GitHub (files, issues, diffs, CI logs), retrieves the best-matching learning material, and asks BharatCode to explain it, streaming the answer back. Issue ranking and the PR check are plain rules, and Practice mode and lessons run entirely in the browser, so they cost no tokens. For writing code, Kitty hands the request to GitHub Copilot.
+The cat and the side panel send requests through the service worker, which is the only part that talks to the server. The server pulls what it needs from GitHub (files, issues, diffs, CI logs), finds the most relevant chunks in a prebuilt BM25 index, and streams the model's answer back over SSE.
 
-- **GitHub token (optional, recommended):** set `GITHUB_TOKEN` on the server (a classic token with only the `public_repo` scope) or add your own in Kitty settings. It raises GitHub's rate limits and unlocks two things GitHub only serves to signed-in callers: code search for "where is X handled?" questions, and full CI logs for "Why did this fail?" (without it Kitty can only see GitHub's short summary).
-- **Grounded answers:** the PDFs and `*/references/` are chunked into a prebuilt index (`server/data/index.json`). The tutor answers from the best-matching chunks and must cite them.
-- **Safe by design:** API keys never ship in the extension. Repository and page text is treated as untrusted, so a README that tries to instruct the model is ignored. Answers stream with timeouts and retry on transient failures.
+- **Grounding:** the PDFs and `*/references/` are chunked into `server/data/index.json` at build time. There's no embeddings endpoint, so retrieval is lexical. The tutor has to cite the chunks it uses.
+- **Untrusted input:** repository and page text is fenced off in the prompt, so a README that tries to instruct the model is treated as data.
+- **Slow or busy model:** 503s are retried after 2, 4 and 8 seconds. The chat gives up after 45 seconds and falls back to the closest saved answer. Tours fall back to Kitty's own notes for each file.
+- **Keys:** the BharatCode key lives on the server. Users can bring their own key, which is sent as `X-Kitty-Key`.
+- **GitHub token:** optional. With `GITHUB_TOKEN` set (a classic token with the `public_repo` scope), the server gets higher rate limits, code search, and full CI logs. Without it, CI explanations only see GitHub's summary.
 
-## Cost per request (measured on the live model)
+## Local development
 
-| Feature | Typical tokens | Typical time |
+```bash
+cd kitty
+npm ci
+cp server/.env.example server/.env   # set LLM_PROVIDER=bharatcode and BHARATCODE_API_KEY to use the real model
+npm run dev -w server                # http://localhost:8787, mock model by default
+npm run build:e2e -w extension       # extension build that talks to localhost
+```
+
+Load `kitty/extension/dist` as an unpacked extension. A plain `npm run build` points at the hosted server instead.
+
+| Command | |
+|---|---|
+| `npm test` | Unit tests for server, extension and ingest (network disabled) |
+| `npm run eval -w ingest` | Retrieval check: 62 questions, hit@6 must stay at or above 85% |
+| `npm run ingest` | Rebuild the knowledge index from the PDFs and references |
+| `npm run build-faq -w server` | Regenerate the saved answers in `server/data/faq.json` with the real model |
+| `npm run e2e -w extension -- all` | Browser tests, see [extension/e2e/README.md](extension/e2e/README.md) |
+| `npm run package -w extension` | Build the release zip |
+
+## Self-hosting on Vercel
+
+- Root directory: `kitty/server`
+- Framework preset: Hono
+- Install command: `cd .. && npm ci -w server --include-workspace-root`
+- Environment: `LLM_PROVIDER=bharatcode`, `BHARATCODE_API_KEY`, optionally `GITHUB_TOKEN` and `RATE_LIMIT_PER_MIN`
+
+Then point Kitty at it under Settings → Advanced.
+
+## Cost
+
+Measured on the live model:
+
+| Request | Tokens | Time |
 |---|---|---|
-| Repo tour | ~10k | walking in ~2 s; explanations done in 20–90 s |
-| Tutor answer | ~3k | first words in 3–8 s |
-| Common question (saved answer) | 0 | instant |
+| Repo tour | ~10k | first step in ~2 s, all explanations in 20–90 s |
+| Chat answer | 3–5k | first words in 3–8 s |
+| Saved answer or recognised Git error | 0 | instant |
 | Explain this | ~1k | 5–14 s |
 
-Tours are cached per repository commit, so a second tour of the same repo costs nothing.
+Tours are cached per commit, so touring the same repo again is free.
 
 ## Credits
 
-Kitty's knowledge comes from GitKitty's PDFs plus adapted excerpts from [*Pro Git*](https://git-scm.com/book) by Scott Chacon and Ben Straub ([CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/)), [GitHub Docs](https://github.com/github/docs) ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)) and the [Git documentation](https://git-scm.com/docs) ([GPL-2.0](https://github.com/git/git/blob/master/COPYING)). Each excerpt is attributed in [`Git/references/SOURCES.md`](../Git/references/SOURCES.md) and keeps its own license. The cat is an original pixel design. UI icons are [GitHub Octicons](https://github.com/primer/octicons) (MIT License, © GitHub Inc.).
+Kitty's knowledge comes from this repo's PDFs and adapted excerpts from [Pro Git](https://git-scm.com/book) by Scott Chacon and Ben Straub ([CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/)), [GitHub Docs](https://github.com/github/docs) ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)) and the [Git documentation](https://git-scm.com/docs) ([GPL-2.0](https://github.com/git/git/blob/master/COPYING)). Each excerpt is attributed in [`Git/references/SOURCES.md`](../Git/references/SOURCES.md). UI icons are [Octicons](https://github.com/primer/octicons) (MIT, GitHub Inc.).
