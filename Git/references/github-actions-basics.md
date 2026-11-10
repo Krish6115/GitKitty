@@ -157,23 +157,23 @@ This guide assumes that:
 
    ```yaml copy
    name: GitHub Actions Demo
-   run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+   run-name: ${{ github.actor }} is testing out GitHub Actions
    on: [push]
    jobs:
      Explore-GitHub-Actions:
        runs-on: ubuntu-latest
        steps:
-         - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-         - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-         - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+         - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
+         - run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+         - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
          - name: Check out repository code
            uses: actions/checkout@v6
-         - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-         - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+         - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
+         - run: echo "The workflow is now ready to test your code on the runner."
          - name: List files in the repository
            run: |
              ls ${{ github.workspace }}
-         - run: echo "🍏 This job's status is ${{ job.status }}."
+         - run: echo "This job's status is ${{ job.status }}."
    ```
 
    At this stage you don't need to understand the details of this workflow. For now, you can just copy and paste the contents into the file. After completing this quickstart guide, you can learn about the syntax of workflow files in [Workflows](https://docs.github.com/en/actions/concepts/workflows-and-actions/workflows), and for an explanation of GitHub Actions contexts, such as `${{ github.actor }}` and `${{ github.event_name }}`, see [Contexts](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts).
