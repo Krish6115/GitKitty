@@ -7,7 +7,7 @@ import type { RetrievedChunk } from '../rag/retrieve.js';
 import type { TutorSource } from '../tutor/service.js';
 import { unverifiedFlags } from '../tutor/verify-flags.js';
 import { classifySelection, commandRisk, type CommandRisk, type SelectionKind } from './classify.js';
-import { explainMessages, type PageType } from './prompt.js';
+import { explainMessages } from './prompt.js';
 
 export const MAX_SELECTION = 4000;
 

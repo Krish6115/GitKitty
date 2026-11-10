@@ -25,7 +25,6 @@ export const FaqEntrySchema = z.object({
 });
 export type FaqEntry = z.infer<typeof FaqEntrySchema>;
 export const FaqFileSchema = z.object({ generatedAt: z.string(), model: z.string(), entries: z.array(FaqEntrySchema) });
-export type FaqFile = z.infer<typeof FaqFileSchema>;
 
 const STOP = new Set('a an the i my me to do does did how what is are can could should would in on of for and or with it this that git github please'.split(' '));
 /** Lowercase content words (git command names count; filler words don't). */

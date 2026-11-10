@@ -11,8 +11,6 @@ import { getTour } from '../tour/service.js';
 import { getPrTour } from '../tour/pr-service.js';
 import { guard, sendEvent, withPings, type RouteDeps } from './common.js';
 
-export type TourRouteDeps = RouteDeps;
-
 export function tourRoute(env: Env, limiter: RateLimiter, deps: RouteDeps = {}): Hono {
   const route = new Hono();
   const cache = new LruCache<TourResult>(100, env.TOUR_CACHE_TTL_MIN * 60_000);
