@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import type { Env } from './env.js';
 import { createRateLimiter } from './lib/rate-limit.js';
 import { healthRoute } from './routes/health.js';
+import { homeRoute } from './routes/home.js';
 import { ciRoute } from './routes/ci.js';
 import { draftRoute } from './routes/draft.js';
 import { contributeRoute } from './routes/contribute.js';
@@ -25,6 +26,7 @@ export function createApp(env: Env, deps: AppDeps = {}): Hono {
   );
   // one per-IP budget shared by all model-backed routes
   const limiter = createRateLimiter(env.RATE_LIMIT_PER_MIN);
+  app.route('/', homeRoute());
   app.route('/', healthRoute(env));
   app.route('/', tourRoute(env, limiter, deps));
   app.route('/', tutorRoute(env, limiter, deps));
