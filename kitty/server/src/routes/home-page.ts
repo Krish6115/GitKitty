@@ -19,6 +19,7 @@ export const HOME_HTML = `<!doctype html>
   h2 { font-size: 1.35rem; margin: 48px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
   .lead { font-size: 1.15rem; color: var(--muted); margin: 0 0 24px; }
   .btn { display:inline-block; background:var(--accent); color:var(--accent-fg); text-decoration:none; font-weight:600; padding:12px 20px; border-radius:8px; }
+  .btn.ghost { background:transparent; color:var(--fg); border:1px solid var(--line); margin-left:8px; }
   .btn:hover { filter: brightness(1.1); }
   .meta { color: var(--muted); font-size: .9rem; margin-top: 8px; }
   video { width:100%; border-radius:10px; border:1px solid var(--line); margin-top: 32px; background:#000; }
@@ -37,6 +38,7 @@ export const HOME_HTML = `<!doctype html>
   <h1>GitKitty</h1>
   <p class="lead">A small pixel cat that lives on github.com. Kitty walks you through any repository before you hand it to an AI, teaches Git with real scenarios, and explains commands, diffs and pull requests when you get stuck.</p>
   <a class="btn" href="/gitkitty-extension.zip" download>Download the Chrome extension (v${EXTENSION_VERSION})</a>
+  <a class="btn ghost" href="https://github.com/Krish6115/GitKitty" target="_blank" rel="noopener">View on GitHub</a>
   <p class="meta">Free. Works in Chrome, Edge, Brave and other Chromium browsers. No account needed.</p>
 
   <video src="/kitty-promo.mp4" controls muted playsinline preload="metadata"></video>
@@ -65,6 +67,9 @@ export const HOME_HTML = `<!doctype html>
 
   <h2>Optional settings</h2>
   <p>Kitty works out of the box. If you hit rate limits on large repos, you can add your own GitHub token in Kitty's settings. It stays in your browser and is only sent to GitHub's API through Kitty's server.</p>
+
+  <h2>Open source</h2>
+  <p>GitKitty is open source. Read the code, report a bug or pick up a good first issue on <a href="https://github.com/Krish6115/GitKitty" target="_blank" rel="noopener">github.com/Krish6115/GitKitty</a>. Stars help other developers find it.</p>
 
   <footer>Kitty runs on the BharatCode model (qwen-3.8-27b). Git lessons draw on the Pro Git book (CC BY-NC-SA 3.0) and the official Git documentation.</footer>
 </main>
