@@ -11,6 +11,14 @@ export default defineManifest({
   background: { service_worker: 'src/background/index.ts', type: 'module' },
   side_panel: { default_path: 'src/sidepanel/index.html' },
   permissions: ['sidePanel', 'storage', 'contextMenus'],
+  commands: {
+    _execute_action: {
+      suggested_key: {
+        default: 'Alt+K',
+        mac: 'MacCtrl+K',
+      },
+    },
+  },
   // the hosted Kitty server and a local dev server
   host_permissions: ['https://kitty-server.vercel.app/*', 'http://localhost:8787/*'],
   content_scripts: [

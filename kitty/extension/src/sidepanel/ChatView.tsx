@@ -16,6 +16,7 @@ import { explored, SKILLS_KEY, type Progress } from '../shared/skills';
 import { Icon } from '../shared/Icon';
 
 type Assistant = Extract<ChatMessage, { role: 'assistant' }>;
+const IS_MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/i.test(navigator.userAgent);
 
 export function ChatView() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -27,7 +28,17 @@ export function ChatView() {
   const [tour, setTour] = useState<TourState | null>(null);
   const [focus, setFocus] = useState<ChatFocus | null>(null);
   const [pasteMode, setPasteMode] = useState(false);
+  const [shortcut, setShortcut] = useState(IS_MAC ? 'MacCtrl+K' : 'Alt+K');
   const busy = messages.at(-1)?.role === 'assistant' && (messages.at(-1) as Assistant).status === 'streaming';
+
+  useEffect(() => {
+    if (typeof chrome !== 'undefined' && chrome.commands?.getAll) {
+      chrome.commands.getAll().then((commands) => {
+        const cmd = commands.find((c) => c.name === '_execute_action');
+        if (cmd?.shortcut) setShortcut(cmd.shortcut);
+      }).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     void chrome.storage.session.get(CHAT_KEY).then((r) => setMessages(((r[CHAT_KEY] as ChatMessage[] | undefined) ?? []).map((m) => (m.role === 'assistant' && m.status === 'streaming' ? { ...m, status: 'stopped' } : m))));
@@ -201,6 +212,7 @@ export function ChatView() {
           {busy ? <button type="button" onClick={() => abortRef.current?.abort()}>Stop</button> : <button type="submit" disabled={!input.trim()}>Ask</button>}
           <button type="button" class="ghost" disabled={busy || messages.length === 0} onClick={() => setMessages([])}>New chat</button>
         </div>
+        <p class="tip">Tip: press {shortcut} to open Kitty. If it doesn't work, set one at <code>chrome://extensions/shortcuts</code>.</p>
       </form>
     </section>
   );

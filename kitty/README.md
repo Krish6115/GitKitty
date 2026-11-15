@@ -25,6 +25,8 @@ Kitty is a Chrome extension (Manifest V3) plus a small Hono server. The extensio
 2. Open `chrome://extensions`, turn on Developer mode, click **Load unpacked** and pick the folder.
 3. Open a repository on github.com and click the cat.
 
+You can also press `Alt+K` (`MacCtrl+K` on macOS) to open Kitty's chat anytime. You can customize the shortcut at `chrome://extensions/shortcuts`.
+
 Release builds use the hosted server at `https://kitty-server.vercel.app` (20 requests per minute per IP). You can add your own BharatCode key in Settings.
 
 ## How it works
