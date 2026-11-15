@@ -28,7 +28,7 @@ export function ChatView() {
   const [tour, setTour] = useState<TourState | null>(null);
   const [focus, setFocus] = useState<ChatFocus | null>(null);
   const [pasteMode, setPasteMode] = useState(false);
-  const [shortcut, setShortcut] = useState(IS_MAC ? 'Control+K' : 'Alt+K');
+  const [shortcut, setShortcut] = useState(IS_MAC ? 'MacCtrl+K' : 'Alt+K');
   const busy = messages.at(-1)?.role === 'assistant' && (messages.at(-1) as Assistant).status === 'streaming';
 
   useEffect(() => {
@@ -212,7 +212,7 @@ export function ChatView() {
           {busy ? <button type="button" onClick={() => abortRef.current?.abort()}>Stop</button> : <button type="submit" disabled={!input.trim()}>Ask</button>}
           <button type="button" class="ghost" disabled={busy || messages.length === 0} onClick={() => setMessages([])}>New chat</button>
         </div>
-        <p class="tip">Tip: press {shortcut} to open Kitty</p>
+        <p class="tip">Tip: press {shortcut} to open Kitty. If it doesn't work, set one at <code>chrome://extensions/shortcuts</code>.</p>
       </form>
     </section>
   );
