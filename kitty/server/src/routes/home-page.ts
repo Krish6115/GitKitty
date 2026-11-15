@@ -1,4 +1,4 @@
-export const EXTENSION_VERSION = '0.8.0';
+export const EXTENSION_VERSION = '0.9.0';
 
 export const HOME_HTML = `<!doctype html>
 <html lang="en">
