@@ -74,6 +74,7 @@ export const css = `
   .composer { position: sticky; bottom: 0; background: var(--bg); padding-top: 6px; border-top: 1px solid var(--line); }
   .composer textarea, .settings input { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
   .composer textarea { resize: vertical; }
+  .composer .tip { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
   .settings { display: flex; flex-direction: column; gap: 10px; } .settings label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
   .settings label span { font-weight: 400; }
   .settings label.check { flex-direction: row; align-items: center; gap: 8px; font-weight: 400; } .settings label.check input { width: auto; }

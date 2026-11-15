@@ -24,7 +24,7 @@ Kitty is a Chrome extension for github.com. It works on the page you already hav
 
 Kitty explains and guides; it doesn't write code. When you ask for code, it hands the request to GitHub Copilot.
 
-**Install:** download the zip from the [latest release](https://github.com/Krish6115/GitKitty/releases/latest), unzip it, open `chrome://extensions`, turn on Developer mode and choose **Load unpacked**.
+**Install:** download the zip from the [latest release](https://github.com/Krish6115/GitKitty/releases/latest), unzip it, open `chrome://extensions`, turn on Developer mode and choose **Load unpacked**. You can also press `Alt+K` (`MacCtrl+K` on macOS) to open Kitty anytime.
 
 Architecture, local setup and self-hosting are in [kitty/README.md](kitty/README.md).
 
