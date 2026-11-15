@@ -3,7 +3,7 @@ import type { Chunk } from '../../server/src/rag/search-config.js';
 
 export const CHUNK = { min: 400, max: 600, overlap: 60 } as const;
 
-/** Rough token estimate (~4 characters per token); no Qwen tokenizer is available offline. */
+/** Rough token estimate (~4 characters per token); no model tokenizer is available offline. */
 export const estimateTokens = (text: string): number => Math.ceil(text.length / 4);
 
 export interface SourceMeta {

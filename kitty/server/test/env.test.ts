@@ -6,7 +6,7 @@ describe('loadEnv', () => {
     const env = loadEnv({});
     expect(env.LLM_PROVIDER).toBe('mock');
     expect(env.PORT).toBe(8787);
-    expect(env.BHARATCODE_MODEL).toBe('qwen-3.8-27b');
+    expect(env.BHARATCODE_MODEL).toBe('glm-5.3-flash');
     expect(env.BHARATCODE_API_KEY).toBeUndefined();
   });
 

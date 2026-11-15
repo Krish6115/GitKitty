@@ -1,6 +1,6 @@
 {
   "generatedAt": "2026-11-03T08:11:50.583Z",
-  "model": "qwen-3.8-27b",
+  "model": "glm-5.3-flash",
   "entries": [
     {
       "id": "undo-last-commit-keep",

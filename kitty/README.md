@@ -1,6 +1,6 @@
 # Kitty
 
-Kitty is a Chrome extension (Manifest V3) plus a small Hono server. The extension adds a pixel cat to github.com; the server fetches context from GitHub, retrieves matching learning material, and calls BharatCode's `qwen-3.8-27b` model.
+Kitty is a Chrome extension (Manifest V3) plus a small Hono server. The extension adds a pixel cat to github.com; the server fetches context from GitHub, retrieves matching learning material, and calls BharatCode's `glm-5.3-flash` model.
 
 ## Features
 
@@ -56,7 +56,7 @@ flowchart LR
 
   subgraph OUT["External services"]
     direction TB
-    BC["BharatCode<br/>qwen-3.8-27b"]
+    BC["BharatCode<br/>glm-5.3-flash"]
     GH["GitHub REST API<br/>repos · issues · PRs · CI logs · code search"]
     CP["GitHub Copilot<br/>(github.com/copilot)"]
   end

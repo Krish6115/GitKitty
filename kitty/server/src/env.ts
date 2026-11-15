@@ -4,7 +4,7 @@ export const EnvSchema = z.object({
   LLM_PROVIDER: z.enum(['mock', 'bharatcode']).default('mock'),
   PORT: z.coerce.number().int().positive().default(8787),
   BHARATCODE_BASE_URL: z.url().default('https://bharatcode.ai/api/model/v1'),
-  BHARATCODE_MODEL: z.string().min(1).default('qwen-3.8-27b'),
+  BHARATCODE_MODEL: z.string().min(1).default('glm-5.3-flash'),
   BHARATCODE_API_KEY: z.string().optional(),
   GITHUB_TOKEN: z.string().optional(),
   RATE_LIMIT_PER_MIN: z.coerce.number().int().positive().default(20),

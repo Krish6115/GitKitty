@@ -26,15 +26,15 @@ function sse(items: (object | number)[]): Response {
     { status: 200, headers: { 'Content-Type': 'text/event-stream' } },
   );
 }
-const delta = (content: string, finish: string | null = null) => ({ id: 'x', object: 'chat.completion.chunk', created: 0, model: 'qwen-3.8-27b', choices: [{ index: 0, delta: { content }, finish_reason: finish }] });
-const usageChunk = { id: 'x', object: 'chat.completion.chunk', created: 0, model: 'qwen-3.8-27b', choices: [], usage: { prompt_tokens: 5, completion_tokens: 3, total_tokens: 8 } };
+const delta = (content: string, finish: string | null = null) => ({ id: 'x', object: 'chat.completion.chunk', created: 0, model: 'glm-5.3-flash', choices: [{ index: 0, delta: { content }, finish_reason: finish }] });
+const usageChunk = { id: 'x', object: 'chat.completion.chunk', created: 0, model: 'glm-5.3-flash', choices: [], usage: { prompt_tokens: 5, completion_tokens: 3, total_tokens: 8 } };
 const errorRes = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 function make(fetchImpl: (url: string, init: RequestInit) => Promise<Response>, over: { firstTokenMs?: number; idleMs?: number; totalMsOverride?: number } = {}) {
   const sleep = vi.fn(async () => {});
   const p = createBharatCodeProvider({
     baseUrl: 'https://bc.test/v1',
-    model: 'qwen-3.8-27b',
+    model: 'glm-5.3-flash',
     apiKey: 'sk-test',
     firstTokenMs: over.firstTokenMs ?? 5000,
     idleMs: over.idleMs ?? 5000,
@@ -69,7 +69,7 @@ describe('BharatCodeProvider (openai SDK, fake fetch)', () => {
     await p.chat({ ...req, kind: 'tutor' });
     expect(r).toMatchObject({ text: 'pong', truncated: false, usage: { totalTokens: 8 } });
     expect(String(fetchImpl.mock.calls[0]?.[0])).toBe('https://bc.test/v1/chat/completions');
-    expect(bodies[0]).toMatchObject({ model: 'qwen-3.8-27b', stream: true, max_tokens: 1500, reasoning_effort: 'none' });
+    expect(bodies[0]).toMatchObject({ model: 'glm-5.3-flash', stream: true, max_tokens: 1500, reasoning_effort: 'none' });
     expect(bodies[1]).toMatchObject({ max_tokens: 10000, reasoning_effort: 'low' });
     expect(bodies[2]).toMatchObject({ max_tokens: 6000, reasoning_effort: 'low' });
   });
