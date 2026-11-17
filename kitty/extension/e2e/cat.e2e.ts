@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { launch, log, OUT_DIR } from './launch.js';
 
 export async function catE2E(): Promise<void> {
-  const { ctx } = await launch();
+  const { ctx, extId } = await launch();
   const page = await ctx.newPage();
   const check = async (label: string): Promise<void> => {
     await page.waitForSelector('#kitty-root', { state: 'attached', timeout: 15_000 });
@@ -33,6 +33,15 @@ export async function catE2E(): Promise<void> {
   const themeForced = await page.evaluate(() => document.getElementById('kitty-root')?.dataset.theme);
   if (themeAuto !== 'dark' || themeForced !== 'light') throw new Error(`theme sync: auto+dark OS -> ${themeAuto}, GitHub light -> ${themeForced}`);
   log(`theme: OS dark -> ${themeAuto}; GitHub set to light -> ${themeForced}`);
+  // the side panel follows GitHub too, even with a dark OS
+  const panel = await ctx.newPage();
+  await panel.emulateMedia({ colorScheme: 'dark' });
+  await panel.goto(`chrome-extension://${extId}/src/sidepanel/index.html`);
+  await panel.waitForFunction(() => document.documentElement.dataset.theme === 'light', null, { timeout: 2_000 });
+  await page.evaluate(() => document.documentElement.setAttribute('data-color-mode', 'dark'));
+  await panel.waitForFunction(() => document.documentElement.dataset.theme === 'dark', null, { timeout: 2_000 });
+  log('side panel theme follows GitHub: light -> dark');
+  await panel.close();
   await page.click('a[href="/git/git/pulls"]');
   await page.waitForURL('**/pulls');
   await check('after in-page navigation to /pulls');

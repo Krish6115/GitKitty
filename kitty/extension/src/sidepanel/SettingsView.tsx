@@ -27,6 +27,7 @@ export function SettingsView() {
           explainPill: s.explainPill !== false,
           explainButtons: s.explainButtons !== false,
           level: s.level ?? 'auto',
+          theme: s.theme ?? 'github',
         }).then(() => setSaved(true));
       }}
     >
@@ -54,6 +55,14 @@ export function SettingsView() {
           <option value="beginner">Beginner: step by step, terms explained</option>
           <option value="intermediate">Intermediate: concise, tricky parts only</option>
           <option value="advanced">Advanced: just the commands and edge cases</option>
+        </select>
+      </label>
+      <label>
+        Theme
+        <select data-kitty="theme" value={s.theme ?? 'github'} onChange={(e) => { setSaved(false); setS({ ...s, theme: (e.target as HTMLSelectElement).value as Settings['theme'] }); }}>
+          <option value="github">Follow GitHub</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
         </select>
       </label>
       <label class="check">

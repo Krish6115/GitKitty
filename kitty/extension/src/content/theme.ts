@@ -1,6 +1,8 @@
 // Follow GitHub's own appearance setting (html[data-color-mode]), falling back to the OS preference for "auto".
 
-export type Theme = 'light' | 'dark';
+import { GITHUB_THEME_KEY, type Theme } from '../shared/panel-theme';
+
+export type { Theme };
 
 /** GitHub sets data-color-mode="light" | "dark" | "auto" on <html>. */
 export function effectiveTheme(colorMode: string | null, prefersDark: boolean): Theme {
@@ -13,7 +15,10 @@ export function effectiveTheme(colorMode: string | null, prefersDark: boolean): 
 export function syncTheme(host: HTMLElement): () => void {
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const apply = (): void => {
-    host.dataset.theme = effectiveTheme(document.documentElement.getAttribute('data-color-mode'), media.matches);
+    const theme = effectiveTheme(document.documentElement.getAttribute('data-color-mode'), media.matches);
+    host.dataset.theme = theme;
+    // the side panel follows this too
+    void chrome.storage.session.set({ [GITHUB_THEME_KEY]: theme }).catch(() => {});
   };
   apply();
   const observer = new MutationObserver(apply);
