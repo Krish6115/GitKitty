@@ -13,6 +13,8 @@ export interface Settings {
   level?: 'auto' | 'beginner' | 'intermediate' | 'advanced';
   /** Explain what GitHub's own buttons do in Git terms when you hover them (default on). */
   explainButtons?: boolean;
+  /** Side panel theme: follow GitHub (default) or a fixed light/dark. */
+  theme?: 'github' | 'light' | 'dark';
 }
 
 /** The level sent to the tutor: the chosen one, or (auto) from how many skills the learner has explored. */

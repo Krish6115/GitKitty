@@ -1,7 +1,9 @@
-// Side panel styles (light/dark via prefers-color-scheme).
+// Side panel styles. main.tsx sets html[data-theme]; the media query covers the moment before it does.
 export const css = `
   :root { color-scheme: light dark; --fg: #1f2328; --muted: #57606a; --bg: #fff; --panel: #f6f8fa; --accent: #238636; --accent-hover: #2ea043; --line: #d0d7de; --warn: #9a6700; --err: #cf222e; }
-  @media (prefers-color-scheme: dark) { :root { --fg: #e6edf3; --muted: #9da7b3; --bg: #0d1117; --panel: #161b22; --line: #30363d; --warn: #d29922; --err: #f85149; } }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; --fg: #e6edf3; --muted: #9da7b3; --bg: #0d1117; --panel: #161b22; --line: #30363d; --warn: #d29922; --err: #f85149; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme]) { --fg: #e6edf3; --muted: #9da7b3; --bg: #0d1117; --panel: #161b22; --line: #30363d; --warn: #d29922; --err: #f85149; } }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
   main { padding: 12px 14px 16px; display: flex; flex-direction: column; min-height: 100vh; }
@@ -64,7 +66,7 @@ export const css = `
   .sources summary { cursor: pointer; color: var(--muted); font-size: 12px; } .sources ol { margin: 4px 0 0; padding-left: 20px; font-size: 12px; }
   .warn { color: var(--warn); font-size: 12px; } .warn code { margin: 0 2px; }
   .error { color: var(--err); }
-  .ok { color: #1a7f37; } @media (prefers-color-scheme: dark) { .ok { color: #3fb950; } }
+  .ok { color: #1a7f37; } @media (prefers-color-scheme: dark) { :root:not([data-theme]) .ok { color: #3fb950; } } :root[data-theme="dark"] .ok { color: #3fb950; }
   .welcome { max-width: 560px; margin: 0 auto; } .howto { padding-left: 18px; } .howto li { margin: 4px 0; }
   .thinking::after { content: ""; animation: dots 1.2s steps(4) infinite; }
   @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
