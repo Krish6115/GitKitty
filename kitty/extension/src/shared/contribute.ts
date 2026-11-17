@@ -83,6 +83,8 @@ export interface BeginnerIssue {
   comments: number;
   updatedAt: string;
   reasons: string[];
+  /** The repo's stars (search results across GitHub only). */
+  stars?: number;
 }
 export interface BeginnerIssues {
   issues: BeginnerIssue[];
