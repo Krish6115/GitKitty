@@ -3,9 +3,10 @@
 import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import type { Env } from '../env.js';
-import { createGitHubClient } from '../github/client.js';
+import { createGitHubClient, type RepoInfo } from '../github/client.js';
 import { issueSearchQuery, rankBeginnerIssues, type BeginnerIssues } from '../github/issues.js';
 import { runPreflight } from '../github/preflight.js';
+import { rerankByRepo } from '../github/repo-signal.js';
 import { LruCache } from '../lib/lru.js';
 import { clientIp, type RateLimiter } from '../lib/rate-limit.js';
 import { toKittyError } from '../llm/errors.js';
@@ -15,11 +16,15 @@ const name = z.string().regex(/^[A-Za-z0-9_.-]{1,100}$/);
 const IssuesRequest = z.object({ owner: name, repo: name });
 const SearchRequest = z.object({ query: z.string().trim().min(1).max(120), repo: z.string().regex(/^[A-Za-z0-9_.-]{1,100}\/[A-Za-z0-9_.-]{1,100}$/).optional() });
 const BEGINNER_LABELS = ['good first issue', 'help wanted'];
+/** How many search results get their repo looked up (one GitHub call per new repo, cached). */
+const RERANK_POOL = 15;
 const PreflightRequest = z.object({ owner: name, repo: name, pr: z.number().int().positive().max(100_000_000) });
 
 export function contributeRoute(env: Env, limiter: RateLimiter, deps: RouteDeps = {}): Hono {
   const route = new Hono();
   const issueCache = new LruCache<BeginnerIssues>(200, 10 * 60_000);
+  // stars, last push and archived flag per repo, for re-ranking search results
+  const repoCache = new LruCache<RepoInfo | null>(1000, 6 * 60 * 60_000);
 
   const setup = (c: Context): ReturnType<typeof createGitHubClient> | Response => {
     const rl = limiter.take(clientIp(c.req.raw.headers));
@@ -67,7 +72,30 @@ export function contributeRoute(env: Env, limiter: RateLimiter, deps: RouteDeps 
     const github = setup(c);
     if (github instanceof Response) return github;
     try {
-      const result = rankBeginnerIssues(await github.searchIssues(issueSearchQuery(body.data.query, body.data.repo)));
+      const now = Date.now();
+      const pool = rankBeginnerIssues(await github.searchIssues(issueSearchQuery(body.data.query, body.data.repo)), now, body.data.repo ? 5 : RERANK_POOL);
+      let result: BeginnerIssues = { ...pool, issues: pool.issues.slice(0, 5) };
+      if (!body.data.repo) {
+        // across GitHub: prefer active, popular repos; on any GitHub error keep the plain ranking
+        const names = [...new Set(pool.issues.map((i) => i.repo.toLowerCase()))];
+        const repos = new Map<string, RepoInfo | null>();
+        let limited = false;
+        for (const n of names) {
+          const cached = repoCache.get(n);
+          if (cached !== undefined) repos.set(n, cached);
+          else if (!limited) {
+            const [owner = '', name = ''] = n.split('/');
+            try {
+              const info = await github.getRepo(owner, name);
+              repoCache.set(n, info);
+              repos.set(n, info);
+            } catch {
+              limited = true; // probably the rate limit: stop asking, rank the rest as before
+            }
+          }
+        }
+        result = { ...pool, issues: rerankByRepo(pool.issues, repos, now) };
+      }
       issueCache.set(key, result);
       return c.json(result);
     } catch (e) {

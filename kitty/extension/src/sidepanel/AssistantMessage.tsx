@@ -77,7 +77,7 @@ export function AssistantMessage({ m, previous, page }: { m: Assistant; previous
                   {m.found.issues.map((i) => (
                     <li key={`${i.repo}#${i.number}`}>
                       <a href={i.url} target="_blank" rel="noopener noreferrer"><strong>{i.repo}#{i.number}</strong> {i.title}</a>
-                      {i.labels.length > 0 && <div class="small muted">{i.labels.slice(0, 3).join(' · ')}</div>}
+                      {(i.labels.length > 0 || i.stars !== undefined) && <div class="small muted">{[...(i.stars !== undefined ? [`${i.stars.toLocaleString('en-US')} stars`] : []), ...i.labels.slice(0, 3)].join(' · ')}</div>}
                       <div class="row">
                         <button class="small" data-kitty="show-issue" onClick={() => void runOnPage({ type: 'explain_issue', repo: i.repo, number: i.number })}>Show me</button>
                         <button class="ghost small" onClick={() => void runOnPage({ type: 'fix_issue', repo: i.repo, number: i.number })}>Help me fix it</button>

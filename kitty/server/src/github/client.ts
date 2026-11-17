@@ -10,6 +10,8 @@ export const RepoSchema = z.object({
   stargazers_count: z.number(),
   private: z.boolean(),
   html_url: z.string(),
+  archived: z.boolean().optional(),
+  pushed_at: z.string().nullable().optional(),
 });
 export type RepoInfo = z.infer<typeof RepoSchema>;
 

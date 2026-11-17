@@ -3,6 +3,7 @@ import { createApp } from '../src/create-app.js';
 import { loadEnv } from '../src/env.js';
 import type { Issue, Pull, PullCommit, PullFile } from '../src/github/client.js';
 import { rankBeginnerIssues } from '../src/github/issues.js';
+import { repoBoost, rerankByRepo } from '../src/github/repo-signal.js';
 import { preflightChecks } from '../src/github/preflight.js';
 import { boostForIssue, issueHints, rankFiles } from '../src/github/rank.js';
 import { LruCache } from '../src/lib/lru.js';
@@ -209,5 +210,62 @@ describe('chat actions', () => {
     const { issueSearchQuery } = await import('../src/github/issues.js');
     expect(issueSearchQuery('docker "compose"')).toBe('docker compose is:issue is:open no:assignee label:"good first issue"');
     expect(issueSearchQuery('docs', 'cli/cli')).toBe('docs repo:cli/cli is:issue is:open no:assignee');
+  });
+});
+
+describe('search results prefer active, popular repos', () => {
+  const repoInfo = (full: string, stars: number, pushed: string, archived = false) => ({
+    full_name: full, description: null, default_branch: 'main', language: null, stargazers_count: stars, private: false,
+    html_url: `https://github.com/${full}`, archived, pushed_at: pushed,
+  });
+  const found = (repo: string, n: number) => issue({ number: n, labels: ['good first issue'], html_url: `https://github.com/${repo}/issues/${n}` });
+
+  it('boosts stars and recent pushes, penalises quiet repos and drops archived ones', () => {
+    expect(repoBoost(repoInfo('a/b', 0, '2020-01-01T00:00:00Z'), NOW)).toBeLessThan(0);
+    expect(repoBoost(repoInfo('a/b', 50_000, '2026-10-25T00:00:00Z'), NOW)).toBe(15);
+    expect(repoBoost(repoInfo('a/b', 50_000, '2026-10-25T00:00:00Z', true), NOW)).toBeNull();
+  });
+
+  it('re-ranks by repo, keeps unread repos as they were and adds stars', () => {
+    const pool = rankBeginnerIssues([found('tiny/old', 1), found('big/active', 2), found('archived/x', 3), found('unknown/y', 4)], NOW, 15).issues;
+    const repos = new Map([
+      ['tiny/old', repoInfo('tiny/old', 2, '2023-01-01T00:00:00Z')],
+      ['big/active', repoInfo('big/active', 12_000, '2026-10-30T00:00:00Z')],
+      ['archived/x', repoInfo('archived/x', 9_000, '2026-10-30T00:00:00Z', true)],
+      ['unknown/y', null],
+    ]);
+    const ranked = rerankByRepo(pool, repos, NOW);
+    expect(ranked.map((i) => i.repo)).toEqual(['big/active', 'unknown/y', 'tiny/old']);
+    expect(ranked[0]?.stars).toBe(12_000);
+    expect(ranked[0]?.reasons).toContain('12,000 stars');
+    expect(ranked[1]?.stars).toBeUndefined();
+    const many = rankBeginnerIssues([1, 2, 3, 4].map((n) => found('big/active', n)), NOW, 15).issues;
+    expect(rerankByRepo(many, repos, NOW)).toHaveLength(2); // at most two per repo
+  });
+
+  it('POST /search-issues looks each repo up once and falls back when GitHub refuses', async () => {
+    const items = [found('tiny/old', 1), found('big/active', 2), found('big/active', 5)];
+    const calls: string[] = [];
+    const fetchWith = (repoStatus: number) => (async (input: string | URL | Request) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      calls.push(url);
+      if (url.includes('/search/issues')) return new Response(JSON.stringify({ items }));
+      if (repoStatus !== 200) return new Response('{"message":"API rate limit exceeded"}', { status: repoStatus });
+      if (url.endsWith('/repos/tiny/old')) return new Response(JSON.stringify(repoInfo('tiny/old', 1, '2022-01-01T00:00:00Z')));
+      if (url.endsWith('/repos/big/active')) return new Response(JSON.stringify(repoInfo('big/active', 30_000, '2026-10-30T00:00:00Z')));
+      return new Response('{}', { status: 404 });
+    }) as typeof fetch;
+    const ask = async (status: number) => {
+      const app = createApp(loadEnv({}), { githubFetch: fetchWith(status) });
+      const res = await app.request('/search-issues', { method: 'POST', body: JSON.stringify({ query: 'docker' }), headers: { 'content-type': 'application/json' } });
+      expect(res.status).toBe(200);
+      return ((await res.json()) as { issues: { repo: string; stars?: number }[] }).issues;
+    };
+    const ranked = await ask(200);
+    expect(ranked[0]).toMatchObject({ repo: 'big/active', stars: 30_000 });
+    expect(calls.filter((u) => u.includes('/repos/big/active'))).toHaveLength(1);
+    const fallback = await ask(403);
+    expect(fallback).toHaveLength(3);
+    expect(fallback.every((i) => i.stars === undefined)).toBe(true);
   });
 });
