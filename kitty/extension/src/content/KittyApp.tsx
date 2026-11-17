@@ -171,12 +171,14 @@ export function KittyApp() {
         prNo={prNo}
         ciRun={Boolean(ciRun)}
         chatHint={chatHint}
+        resume={t.resumable ? { step: t.resumable.currentIndex + 1, total: t.resumable.steps.length } : null}
         act={{
           onCi: () => { close(); if (t.repo && ciRun) requestCiExplain({ owner: t.repo.owner, repo: t.repo.repo, ...ciRun }); },
           onFixIssue: () => issueNo && startTour(issueNo),
           onPreflight: () => { close(); setPanel('preflight'); if (t.repo && prNo) preflightApi.run({ owner: t.repo.owner, repo: t.repo.repo, pr: prNo }); },
           onPrTour: () => prNo && startTour(undefined, prNo),
           onTour: () => startTour(),
+          onResume: () => { close(); void t.resume(); },
           onFindIssues: () => { close(); setPanel('issues'); if (t.repo) issuesApi.run({ owner: t.repo.owner, repo: t.repo.repo }); },
           onGuides: () => { close(); setPanel('guides'); },
           onAsk: () => void chrome.runtime.sendMessage({ type: 'open-chat' }).then((r: { ok?: boolean } | undefined) => (r?.ok ? close() : setChatHint(true))),

@@ -7,6 +7,7 @@ export interface MenuActions {
   onPreflight: () => void;
   onPrTour: () => void;
   onTour: () => void;
+  onResume: () => void;
   onFindIssues: () => void;
   onGuides: () => void;
   onAsk: () => void;
@@ -18,10 +19,12 @@ interface Props {
   prNo: number | null;
   ciRun: boolean;
   chatHint: boolean;
+  /** A saved tour of this repo at the same commit, shown as Resume tour (step 4 of 9). */
+  resume: { step: number; total: number } | null;
   act: MenuActions;
 }
 
-export function CatMenu({ repo, issueNo, prNo, ciRun, chatHint, act }: Props) {
+export function CatMenu({ repo, issueNo, prNo, ciRun, chatHint, resume, act }: Props) {
   const name = repo ? `${repo.owner}/${repo.repo}` : '';
   let intro: preact.ComponentChildren;
   let items: { id: string; label: string; run: () => void }[];
@@ -41,10 +44,11 @@ export function CatMenu({ repo, issueNo, prNo, ciRun, chatHint, act }: Props) {
   } else if (repo) {
     intro = <>New to <strong>{name}</strong>? I can walk you through it, find you a first issue, or show you around GitHub.</>;
     items = [
+      ...(resume ? [{ id: 'resume-tour', label: `Resume tour (step ${resume.step} of ${resume.total})`, run: act.onResume }] : []),
       { id: 'start-tour', label: 'Tour this repo', run: act.onTour },
       { id: 'find-issues', label: 'Find a good first issue', run: act.onFindIssues },
       { id: 'show-me-how', label: 'Show me how…', run: act.onGuides },
-    ];
+    ].slice(0, 3);
   } else {
     intro = <>Open a repository for a tour, or ask me anything about Git.</>;
     items = [];
