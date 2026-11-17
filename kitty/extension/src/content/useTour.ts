@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { pathFromUrl, repoFromUrl, signedInLogin, stepUrl } from '../shared/github-page';
 import { errorText, TOUR_PORT, type TourPortEvent } from '../shared/messages';
+import { canResume, currentSha, dropSavedTour, loadSavedTour, saveTourForLater } from '../shared/saved-tours';
 import { syncToPath, TOUR_STATE_KEY, withIndex, type TourState } from '../shared/tour';
 
 export type Phase = { kind: 'idle' } | { kind: 'loading'; message: string } | { kind: 'error'; message: string };
@@ -50,7 +51,25 @@ export function useTour() {
     if (synced !== tour) void save(synced);
   }, [href, tour]);
 
+  // keep a copy in chrome.storage.local so the tour survives a browser restart
+  useEffect(() => {
+    if (tour) void saveTourForLater(tour);
+  }, [tour]);
+
   const repo = repoFromUrl(href);
+  // a tour saved in an earlier session for this repo, offered as "Resume tour" while it matches the current commit
+  const [saved, setSaved] = useState<TourState | null>(null);
+  useEffect(() => {
+    setSaved(null);
+    if (!repo) return;
+    let live = true;
+    void loadSavedTour(repo.owner, repo.repo).then(async (s) => {
+      if (!s || !live) return;
+      const sha = await currentSha(s.owner, s.repo, s.result.meta.defaultBranch);
+      if (live && canResume(s, sha)) setSaved(s);
+    });
+    return () => { live = false; };
+  }, [repo?.owner, repo?.repo]);
   const onTourRepo = Boolean(tour && repo && repo.owner.toLowerCase() === tour.owner.toLowerCase() && repo.repo.toLowerCase() === tour.repo.toLowerCase());
   const currentPath = tour ? pathFromUrl(href, tour, tour.sha) : null;
   const atCurrentStep = Boolean(tour && currentPath === tour.steps[tour.currentIndex]?.path);
@@ -63,10 +82,19 @@ export function useTour() {
     if (step) location.assign(stepUrl(next, next.sha, step.path));
   }, [tour]);
 
+  const resume = useCallback(async () => {
+    if (!saved) return;
+    await save(saved);
+    const step = saved.steps[saved.currentIndex];
+    if (step) location.assign(stepUrl(saved, saved.sha, step.path));
+  }, [saved]);
+
   const exit = useCallback(async () => {
+    if (tour) await dropSavedTour(tour.owner, tour.repo);
+    setSaved(null);
     await save(null);
     setPhase({ kind: 'idle' });
-  }, []);
+  }, [tour]);
 
   /** Start a general tour, a walkthrough of the files to change for `issue`, or a tour of `pr`'s changed files. */
   const start = useCallback((issue?: number, pr?: number) => {
@@ -95,5 +123,6 @@ export function useTour() {
     port.postMessage({ type: 'start', owner: repo.owner, repo: repo.repo, ...(issue ? { issue } : {}), ...(pr ? { pr } : {}), ...(login ? { login } : {}) });
   }, [repo?.owner, repo?.repo]);
 
-  return { href, repo, tour, phase, setPhase, onTourRepo, atCurrentStep, goTo, exit, start };
+  const resumable = saved && !onTourRepo ? saved : null;
+  return { href, repo, tour, phase, setPhase, onTourRepo, atCurrentStep, goTo, exit, start, resumable, resume };
 }

@@ -1,9 +1,10 @@
-// Repo tour: start from the cat menu, Next/Next/Back across file pages, browser back button, leave and resume.
+// Repo tour: start from the cat menu, Next/Next/Back across file pages, browser back button, leave and resume,
+// then resume again after a simulated browser restart (session storage cleared).
 import { join } from 'node:path';
 import { launch, log, OUT_DIR } from './launch.js';
 
 export async function tourE2E(repo = 'Krish6115/GitKitty'): Promise<void> {
-  const { ctx } = await launch();
+  const { ctx, sw } = await launch();
   const page = await ctx.newPage();
   const stepInfo = async (): Promise<string> => {
     await page.locator('#kitty-root [data-kitty="step"]').waitFor({ timeout: 30_000 });
@@ -59,5 +60,19 @@ export async function tourE2E(repo = 'Krish6115/GitKitty'): Promise<void> {
   await page.locator('#kitty-root [data-kitty="resume"] button', { hasText: 'Resume' }).click();
   await page.waitForLoadState('domcontentloaded');
   log('Resume ->', await stepInfo());
+
+  // browser restart: the session copy is gone, the saved copy in local storage offers "Resume tour"
+  const before = await page.locator('#kitty-root [data-kitty="step"] .meta').innerText();
+  await sw.evaluate(() => chrome.storage.session.clear());
+  await page.goto(`https://github.com/${repo}`, { waitUntil: 'domcontentloaded' });
+  await page.locator('#kitty-root button.cat').click();
+  const resumeBtn = page.locator('#kitty-root [data-kitty="resume-tour"]');
+  await resumeBtn.waitFor({ timeout: 15_000 });
+  log('after restart, menu offers:', await resumeBtn.innerText());
+  await resumeBtn.click();
+  await page.waitForLoadState('domcontentloaded');
+  const after = await stepInfo();
+  if (!after.startsWith(before.replace(/\n/g, ' '))) throw new Error(`resumed at a different step: ${before} -> ${after}`);
+  log('Resume after restart ->', after);
   await ctx.close();
 }
