@@ -1,0 +1,80 @@
+name: release
+
+# Push a version tag (git tag v0.10.0 && git push origin v0.10.0) to build the extension and publish a GitHub release
+# with kitty-extension-<tag>.zip attached. Run it by hand from the Actions tab to build the zip without releasing.
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: kitty
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: kitty/package-lock.json
+
+      - name: Tag matches the extension version
+        id: version
+        run: |
+          version=$(node -p "require('./extension/package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match extension/package.json version $version. Bump the version first."
+            exit 1
+          fi
+
+      - run: npm ci
+      - name: Typecheck and build
+        run: npm run build
+      - name: Unit tests
+        run: npm test
+
+      - name: Extension uses the hosted server
+        run: |
+          grep -q '"version": "${{ steps.version.outputs.version }}"' extension/dist/manifest.json
+          if grep -rq 'localhost:8787' extension/dist/assets/*.js && ! grep -rq 'kitty-server.vercel.app' extension/dist/assets/*.js; then
+            echo "::error::The build points at localhost. Build without .env.e2e."
+            exit 1
+          fi
+
+      - name: Zip the extension
+        id: zip
+        run: |
+          name="kitty-extension-v${{ steps.version.outputs.version }}.zip"
+          (cd extension/dist && zip -qr "../../$name" .)
+          unzip -l "$name" | tail -1
+          echo "path=kitty/$name" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kitty-extension
+          path: ${{ steps.zip.outputs.path }}
+
+      - name: Publish the GitHub release
+        if: github.ref_type == 'tag'
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "${{ steps.zip.outputs.path }}" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "${{ steps.zip.outputs.path }}" --title "Kitty $GITHUB_REF_NAME" --generate-notes --verify-tag
+          fi
