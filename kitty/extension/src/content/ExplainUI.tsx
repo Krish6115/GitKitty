@@ -5,6 +5,7 @@ import { CHAT_DRAFT_KEY } from '../shared/messages';
 import { bubblePosition, pillPosition } from './selection';
 import { useExplain } from './useExplain';
 import { Icon } from '../shared/Icon';
+import { Waiting } from '../shared/Waiting';
 
 const RISK: Record<string, { label: string; cls: string }> = {
   safe: { label: 'Safe', cls: 'risk-safe' },
@@ -51,7 +52,7 @@ export function ExplainUI({ hostId }: { hostId: string }) {
             {current.selectionCut && <span>first 4000 characters</span>}
           </div>
           <div class="explain-body">
-            {current.answer ? <Markdown text={current.answer} sources={current.sources} /> : current.status === 'streaming' && <p class="thinking">{current.kind === 'ci' ? 'Kitty is reading the CI log' : 'Kitty is reading'}</p>}
+            {current.answer ? <Markdown text={current.answer} sources={current.sources} /> : current.status === 'streaming' && <Waiting label={current.kind === 'ci' ? 'Kitty is reading the CI log' : 'Kitty is reading'} />}
             {current.status === 'error' && <p class="error">{current.error}</p>}
             {current.unverifiedFlags.length > 0 && (
               <p class="warn"><Icon name="alert" size={12} /> Not verified in Kitty's sources: {current.unverifiedFlags.map((f) => <code key={f}>{f}</code>)}</p>

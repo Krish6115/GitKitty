@@ -4,6 +4,7 @@ import { withRetry, type Sleep } from '../lib/retry.js';
 import { CALL_BUDGETS, type StreamTimeouts } from './budgets.js';
 import { KittyError, toKittyError } from './errors.js';
 import type { ChatRequest, ChatResult, Provider, StreamEvent, Usage } from './types.js';
+import { recordModelWait } from './queue-meter.js';
 import { createWatchdog } from './watchdog.js';
 
 export interface BharatCodeConfig {
@@ -58,12 +59,16 @@ export function createBharatCodeProvider(cfg: BharatCodeConfig): Provider {
       totalMs: Math.min(cfg.totalMsOverride ?? budget.totalMs, req.totalMs ?? Infinity),
     };
     const effort = req.reasoningEffort ?? budget.reasoningEffort;
+    const startedAt = Date.now();
     const wd = createWatchdog(timeouts, req.signal);
     // With a per-request first-token limit, only real answer text counts as "started": the model also streams
     // empty and reasoning-only chunks while it is queued or thinking, which would otherwise keep the wait open.
     const ctrl = new AbortController();
     const firstText = req.firstTokenMs !== undefined
-      ? setTimeout(() => ctrl.abort(new KittyError('timeout', 'The model did not start answering in time.')), timeouts.firstTokenMs)
+      ? setTimeout(() => {
+          recordModelWait(Date.now() - startedAt);
+          ctrl.abort(new KittyError('timeout', 'The model did not start answering in time.'));
+        }, timeouts.firstTokenMs)
       : undefined;
     ctrl.signal.addEventListener('abort', () => wd.abortWith(ctrl.signal.reason), { once: true });
     let text = '';
@@ -92,13 +97,17 @@ export function createBharatCodeProvider(cfg: BharatCodeConfig): Provider {
         { signal: wd.signal, ...(cfg.sleep ? { sleep: cfg.sleep } : {}), ...(cfg.retryDelaysMs ? { delaysMs: cfg.retryDelaysMs } : {}) },
       );
       for await (const chunk of s) {
-        wd.activity(); // any chunk counts, including reasoning-only deltas
+        const choice = chunk.choices[0];
+        const d = choice?.delta as { content?: string | null; reasoning_content?: string | null; reasoning?: string | null } | undefined;
+        // BharatCode sends empty chunks while a request waits in its queue; only real output (answer text or reasoning)
+        // ends the wait for the first words and starts the idle timer
+        if (d?.content || d?.reasoning_content || d?.reasoning || choice?.finish_reason || chunk.usage) wd.activity();
         model = chunk.model || model;
         usage = toUsage(chunk.usage) ?? usage;
-        const choice = chunk.choices[0];
         if (choice?.finish_reason) finishReason = choice.finish_reason;
         const delta = choice?.delta?.content;
         if (delta) {
+          if (!text) recordModelWait(Date.now() - startedAt);
           clearTimeout(firstText);
           text += delta;
           yield { type: 'delta', text: delta };

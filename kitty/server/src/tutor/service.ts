@@ -34,8 +34,9 @@ export type TutorEvent =
   | { type: 'done'; usage: Usage | null; truncated: boolean; unverifiedFlags: string[]; instant?: boolean; diagnosis?: string };
 
 /** The whole answer must start within this long, retry included; the model's own limits are tighter per attempt. */
-export const TUTOR_DEADLINE_MS = 45_000;
-const FIRST_TOKEN_MS = 25_000;
+// how long a chat answer may wait for its first words: BharatCode's free tier can queue requests for 2-3 minutes
+export const TUTOR_DEADLINE_MS = 235_000;
+const FIRST_TOKEN_MS = 230_000;
 
 const SMALL_TALK: [RegExp, string][] = [
   [/^(hi+|hey+|hello+|hola|yo|namaste|good (morning|afternoon|evening))[\s!.,]*(kitty)?[\s!.]*$/i, "Hi! I'm Kitty. Ask me anything about Git or GitHub (\"how do I undo my last commit?\"), ask about the page you're on, or say \"find me a good first issue about Docker\"."],
@@ -119,7 +120,7 @@ export async function* streamTutor(deps: TutorDeps, req: TutorRequest, signal?: 
     messages: tutorMessages(req.question, history, chunks, weak, req.page, undefined, req.tour, repoFiles, req.level),
     ...(isShortQuestion(req.question) || aboutPage ? { reasoningEffort: 'none' as const } : {}),
     firstTokenMs: FIRST_TOKEN_MS,
-    totalMs: TUTOR_DEADLINE_MS + 45_000,
+    totalMs: TUTOR_DEADLINE_MS + 50_000,
     ...(signal ? { signal } : {}),
   };
   let answer = '';

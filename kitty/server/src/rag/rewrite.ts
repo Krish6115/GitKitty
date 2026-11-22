@@ -1,6 +1,7 @@
 // Question rewriting for search: when a learner's plain-English question finds only weak matches ("I messed up my
 // last save"), the model turns it into Git terms ("amend reset undo commit") and Kitty searches again. Only used on
 // weak results, with no reasoning and a tiny output cap, so it costs a few hundred tokens at most.
+import { modelIsQueueing } from '../llm/queue-meter.js';
 import type { Provider } from '../llm/types.js';
 
 export const REWRITE_PROMPT = [
@@ -20,6 +21,8 @@ export function cleanRewrite(text: string): string | null {
 }
 
 export async function rewriteQuery(provider: Provider, question: string, signal?: AbortSignal): Promise<string | null> {
+  // a queued rewrite would only time out, and it takes a queue slot the answer needs
+  if (modelIsQueueing()) return null;
   let text = '';
   try {
     for await (const ev of provider.stream({

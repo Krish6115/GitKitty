@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { recordModelWait } from '../src/llm/queue-meter.js';
 import { cleanRewrite, rewriteQuery, worthRewriting } from '../src/rag/rewrite.js';
 import type { RetrievedChunk } from '../src/rag/retrieve.js';
 import { streamTutor, WEAK_SCORE, type TutorEvent } from '../src/tutor/service.js';
@@ -21,6 +22,17 @@ describe('query rewrite', () => {
     expect(p.reqs[0]).toMatchObject({ reasoningEffort: 'none', maxTokens: 60 });
     const broken = { ...p, stream: () => { throw new Error('down'); } };
     expect(await rewriteQuery(broken, 'i messed up my last save')).toBeNull();
+  });
+
+  it('skips the rewrite while the model is queueing requests', async () => {
+    const p = scripted('amend reset');
+    recordModelWait(90_000);
+    try {
+      expect(await rewriteQuery(p, 'i messed up my last save')).toBeNull();
+      expect(p.reqs).toHaveLength(0);
+    } finally {
+      recordModelWait(0);
+    }
   });
 
   it('searches again with the rewritten terms only when the first search is weak', async () => {

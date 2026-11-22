@@ -1,10 +1,10 @@
-// Stream with one retry when the provider stalls or drops before any text was produced (seen live occasionally).
-// With `deadline` (epoch ms) the retry only happens if there is still time, and it may only wait for the time that is
-// left, so a busy model costs one bounded wait instead of two full ones.
+// Stream with one retry when the provider drops the connection before any text was produced (seen live occasionally).
+// A timeout is not retried: it means the request sat in BharatCode's queue, and a retry would start again at the back.
+// With `deadline` (epoch ms) the retry only happens if there is still time, and it may only wait for the time that is left.
 import { KittyError } from './errors.js';
 import type { ChatRequest, Provider, StreamEvent } from './types.js';
 
-const TRANSIENT = new Set(['timeout', 'upstream_error', 'upstream_unavailable']);
+const TRANSIENT = new Set(['upstream_error', 'upstream_unavailable']);
 
 export async function* streamWithEarlyRetry(provider: Provider, req: ChatRequest, deadline?: number): AsyncGenerator<StreamEvent> {
   let produced = false;

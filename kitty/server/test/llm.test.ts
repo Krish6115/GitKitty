@@ -172,8 +172,14 @@ describe('waiting for the first words (live: BharatCode streams empty chunks whi
     expect(Date.now() - t0).toBeLessThan(900);
   });
 
-  it('keeps the old behaviour without a per-request limit (any chunk counts)', async () => {
-    const { p } = make(async () => sse([delta(''), 50, delta(''), 50, delta('ok', 'stop'), usageChunk]), { firstTokenMs: 80 });
+  it('does not let empty queue chunks start the idle timer, so a queued request keeps waiting', async () => {
+    const { p } = make(async () => sse([delta(''), 60, delta(''), 60, delta('ok', 'stop'), usageChunk]), { firstTokenMs: 1000, idleMs: 40 });
     await expect(p.chat({ kind: 'tutor', messages: [{ role: 'user', content: 'hi' }] })).resolves.toMatchObject({ text: 'ok' });
+  });
+
+  it('still gives up after the first-words limit when only empty chunks arrive', async () => {
+    const empty = Array.from({ length: 20 }, (_, i) => (i % 2 ? 40 : delta('')));
+    const { p } = make(async () => sse(empty), { firstTokenMs: 150, idleMs: 60_000 });
+    await expect(p.chat({ kind: 'tutor', messages: [{ role: 'user', content: 'hi' }] })).rejects.toMatchObject({ code: 'timeout', message: expect.stringMatching(/queue/) });
   });
 });
