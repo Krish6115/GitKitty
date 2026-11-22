@@ -1,0 +1,23 @@
+name: Feature idea
+description: Something Kitty should explain, teach or help with.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What were you trying to do?
+      description: The situation on GitHub or in Git where Kitty didn't help, or could help more.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should Kitty do?
+  - type: dropdown
+    id: help
+    attributes:
+      label: Would you like to build it?
+      options:
+        - Yes, I'd like to open a PR
+        - Maybe, with some pointers
+        - No, just suggesting it
