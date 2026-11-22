@@ -1,6 +1,6 @@
 // Settings: server URL, optional BharatCode key (BYOK) and GitHub token, selection button. Stored in chrome.storage.local.
 import { useEffect, useState } from 'preact/hooks';
-import { DEFAULT_SERVER_URL } from '../shared/config';
+import { DEFAULT_SERVER_URL, PRIVACY_URL } from '../shared/config';
 import { getSettings, saveSettings, type Settings } from '../shared/settings';
 import { ServerCheckButton } from './ServerCheck';
 
@@ -73,7 +73,7 @@ export function SettingsView() {
         />
         Explain GitHub buttons (Sync fork, Squash and merge…) when I hover them
       </label>
-      <p class="muted small">The right-click menu “Ask Kitty about this” always works. Keys stay in this browser and are only sent to the Kitty server above, never to web pages.</p>
+      <p class="muted small">The right-click menu “Ask Kitty about this” always works. Keys stay in this browser and are only sent to the Kitty server above, never to web pages. <a href={PRIVACY_URL} target="_blank" rel="noopener noreferrer">Privacy policy</a></p>
       <details class="advanced">
         <summary class="muted small">Advanced: use a different Kitty server (for developers)</summary>
         <label>Kitty server URL<input type="url" required {...field('serverUrl')} /></label>

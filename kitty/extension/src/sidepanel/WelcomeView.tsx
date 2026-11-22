@@ -1,6 +1,6 @@
 // First-run welcome: Kitty is ready to use (hosted server), optional keys, and a quick "how to use" guide.
 import { useEffect, useState } from 'preact/hooks';
-import { DEFAULT_SERVER_URL } from '../shared/config';
+import { DEFAULT_SERVER_URL, PRIVACY_URL } from '../shared/config';
 import { ONBOARDED_KEY } from '../shared/onboarding';
 import { getSettings, saveSettings, type Settings } from '../shared/settings';
 import { ServerCheckButton } from './ServerCheck';
@@ -36,7 +36,7 @@ export function WelcomeView({ onDone }: { onDone: () => void }) {
           GitHub token <span class="muted small">(higher rate limits, private repos)</span>
           <input type="password" autocomplete="off" value={s.githubToken ?? ''} onInput={set('githubToken')} />
         </label>
-        <p class="muted small">Keys stay in this browser and are only sent to the Kitty server.</p>
+        <p class="muted small">Keys stay in this browser and are only sent to the Kitty server. <a href={PRIVACY_URL} target="_blank" rel="noopener noreferrer">Privacy policy</a></p>
 
         <h3>3. How to use me</h3>
         <ul class="howto">
