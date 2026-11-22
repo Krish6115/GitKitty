@@ -3,9 +3,9 @@ import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 import type { Env } from '../env.js';
 import { createGitHubClient } from '../github/client.js';
-import { LruCache } from '../lib/lru.js';
 import type { RateLimiter } from '../lib/rate-limit.js';
-import { TourRequestSchema, type TourResult, type TourStep } from '../tour/schema.js';
+import { tourCacheFromEnv } from '../lib/tour-store.js';
+import { TourRequestSchema, type TourStep } from '../tour/schema.js';
 import type { TourStage, TourStart } from '../tour/service.js';
 import { getTour } from '../tour/service.js';
 import { getPrTour } from '../tour/pr-service.js';
@@ -13,7 +13,7 @@ import { guard, sendEvent, withPings, type RouteDeps } from './common.js';
 
 export function tourRoute(env: Env, limiter: RateLimiter, deps: RouteDeps = {}): Hono {
   const route = new Hono();
-  const cache = new LruCache<TourResult>(100, env.TOUR_CACHE_TTL_MIN * 60_000);
+  const cache = tourCacheFromEnv(env, deps.storeFetch);
 
   route.post('/tour', async (c) => {
     const body = TourRequestSchema.safeParse(await c.req.json().catch(() => null));

@@ -10,6 +10,8 @@ import type { Provider } from '../llm/types.js';
 
 export interface RouteDeps {
   githubFetch?: typeof fetch;
+  /** For the optional Redis tour store (tests). */
+  storeFetch?: typeof fetch;
   llmFetch?: typeof fetch;
   logger?: UsageLogger;
   keepAliveMs?: number;

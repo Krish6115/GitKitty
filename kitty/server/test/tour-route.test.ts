@@ -34,6 +34,24 @@ describe('POST /tour', () => {
     expect(result?.data).toMatchObject({ meta: { owner: 'acme', repo: 'todo-api', provider: 'mock', partial: false }, tour: { steps: expect.any(Array) } });
   });
 
+  it('serves a tour from the shared Redis store after a cold start', async () => {
+    const stored = new Map<string, string>();
+    const upstash = (async (_url: string | URL | Request, init?: RequestInit) => {
+      const [op, key, value] = JSON.parse(String(init?.body)) as [string, string, string];
+      if (op === 'SET') stored.set(key, value);
+      return new Response(JSON.stringify({ result: op === 'SET' ? 'OK' : (stored.get(key) ?? null) }));
+    }) as typeof fetch;
+    const env = loadEnv({ UPSTASH_REDIS_REST_URL: 'https://redis.example', UPSTASH_REDIS_REST_TOKEN: 't' });
+    const first = createApp(env, { githubFetch: fakeGitHubFetch(f), logger: silent, storeFetch: upstash });
+    const made = (await events(await post(first, { owner: f.owner, repo: f.repo }))).at(-1);
+    expect(made?.data).toMatchObject({ meta: { cached: false } });
+    expect(stored.size).toBe(1);
+    // a new instance has an empty memory cache, but the tour is still there
+    const fresh = createApp(env, { githubFetch: fakeGitHubFetch(f), logger: silent, storeFetch: upstash });
+    const again = (await events(await post(fresh, { owner: f.owner, repo: f.repo }))).at(-1);
+    expect(again?.data).toMatchObject({ meta: { cached: true }, tour: (made?.data as { tour: unknown }).tour });
+  });
+
   it('reports GitHub errors as an error event', async () => {
     const evs = await events(await post(app, { owner: 'acme', repo: 'missing' }));
     expect(evs.at(-1)).toEqual({ event: 'error', data: { code: 'github_not_found', message: expect.any(String) } });
