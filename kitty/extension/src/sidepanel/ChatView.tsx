@@ -5,6 +5,7 @@ import { wantsToGo, type KittyAction } from '../shared/actions';
 import type { BeginnerIssues } from '../shared/contribute';
 import { CHAT_KEY, toHistory, trimChat, type ChatMessage, type ChatSource } from '../shared/chat';
 import { CHAT_DRAFT_KEY, errorText } from '../shared/messages';
+import { recordHelp } from '../shared/star-prompt';
 import { pageLabel, READ_PAGE_KEY, type PageContext } from '../shared/page-context';
 import { CHAT_FOCUS_KEY, TOUR_STATE_KEY, tourContext, type ChatFocus, type TourState } from '../shared/tour';
 import { TourPanel } from './TourView';
@@ -151,7 +152,10 @@ export function ChatView() {
             void runOnPage(action);
           }
         }
-        else if (event === 'done') updateLast((m) => ({ ...m, status: 'done', unverifiedFlags: d.unverifiedFlags as string[], truncated: Boolean(d.truncated), ...(d.instant ? { instant: true } : {}), ...(d.diagnosis ? { diagnosis: String(d.diagnosis) } : {}) }));
+        else if (event === 'done') {
+          void recordHelp();
+          updateLast((m) => ({ ...m, status: 'done', unverifiedFlags: d.unverifiedFlags as string[], truncated: Boolean(d.truncated), ...(d.instant ? { instant: true } : {}), ...(d.diagnosis ? { diagnosis: String(d.diagnosis) } : {}) }));
+        }
         else if (event === 'error') updateLast((m) => ({ ...m, status: 'error', error: errorText(String(d.code), String(d.message)) }));
       }, abort.signal);
       updateLast((m) => (m.status === 'streaming' ? { ...m, status: 'error', error: 'The answer ended unexpectedly.' } : m));
