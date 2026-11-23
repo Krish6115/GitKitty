@@ -1,6 +1,6 @@
 import { htmlPage } from './page-style.js';
 
-export const EXTENSION_VERSION = '0.9.0';
+export const EXTENSION_VERSION = '0.10.0';
 
 export const HOME_HTML = htmlPage(
   'GitKitty',
