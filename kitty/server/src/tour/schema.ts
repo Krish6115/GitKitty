@@ -45,6 +45,10 @@ export interface TourMeta {
   described?: number;
   /** Planned tours: the model was too slow or failed, so the tour uses Kitty's own notes. */
   modelFailed?: boolean;
+  /** When the model wrote this tour (ISO time). */
+  createdAt?: string;
+  /** Served from a recent tour of an earlier commit whose files all still exist: that commit's SHA. */
+  basedOn?: string;
 }
 
 export interface TourResult {

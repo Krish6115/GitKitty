@@ -130,7 +130,7 @@ Measured on the live model:
 | Saved answer or recognised Git error | 0 | instant |
 | Explain this | ~1k | 5–14 s |
 
-Tours are cached per commit, so touring the same repo again is free. With Upstash connected, that cache survives cold starts and every server instance shares it.
+Tours are cached per commit, so touring the same repo again is free. With Upstash connected, that cache survives cold starts and every server instance shares it. A tour from the last 14 days is reused for a newer commit as long as every file it visits still exists, and a weekly GitHub Actions job (`warm-tours`) tours the repositories in `server/scripts/popular-repos.json` so their tours are ready before anyone asks.
 
 ## Credits
 
