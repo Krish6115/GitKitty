@@ -4,6 +4,7 @@ import { ApiError, postJson, postStream } from '../shared/api';
 import { wantsToGo, type KittyAction } from '../shared/actions';
 import type { BeginnerIssues } from '../shared/contribute';
 import { CHAT_KEY, toHistory, trimChat, type ChatMessage, type ChatSource } from '../shared/chat';
+import { buildChatMarkdown } from '../shared/chat-export';
 import { CHAT_DRAFT_KEY, errorText } from '../shared/messages';
 import { recordHelp } from '../shared/star-prompt';
 import { pageLabel, READ_PAGE_KEY, type PageContext } from '../shared/page-context';
@@ -166,6 +167,33 @@ export function ChatView() {
     }
   }
 
+  function downloadChat(): void {
+    if (messages.length === 0) return;
+
+    const markdown = buildChatMarkdown(messages);
+    const blob = new Blob([markdown], {
+      type: 'text/markdown;charset=utf-8',
+    });
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+
+    const now = new Date();
+    const date = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    anchor.href = objectUrl;
+    anchor.download = `kitty-chat-${date}.md`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    // Release the temporary object URL after the browser starts the download.
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  }
+
   return (
     <section class="chat">
       {tour && <TourPanel state={tour} onAsk={askAbout} />}
@@ -216,6 +244,15 @@ export function ChatView() {
         <div class="row">
           {busy ? <button type="button" onClick={() => abortRef.current?.abort()}>Stop</button> : <button type="submit" disabled={!input.trim()}>Ask</button>}
           <button type="button" class="ghost" disabled={busy || messages.length === 0} onClick={() => setMessages([])}>New chat</button>
+          <button
+            type="button"
+            class="ghost"
+            disabled={messages.length === 0}
+            onClick={downloadChat}
+            title="Download this conversation as Markdown"
+          >
+            Download chat
+          </button>
         </div>
         <p class="tip">Tip: press {shortcut} to open Kitty. If it doesn't work, set one at <code>chrome://extensions/shortcuts</code>.</p>
       </form>
