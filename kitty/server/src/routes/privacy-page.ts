@@ -1,6 +1,6 @@
 import { htmlPage } from './page-style.js';
 
-export const PRIVACY_UPDATED = '23 November 2026';
+export const PRIVACY_UPDATED = '24 November 2026';
 
 export const PRIVACY_HTML = htmlPage(
   'GitKitty privacy policy',
@@ -32,7 +32,7 @@ export const PRIVACY_HTML = htmlPage(
   <h2>What the server does with it</h2>
   <ul>
     <li>Reads public data from GitHub's API: files, issues, pull requests and CI logs.</li>
-    <li>Sends your question and the repository or page context to BharatCode's model API (<a href="https://bharatcode.ai" target="_blank" rel="noopener">bharatcode.ai</a>), which writes the answer.</li>
+    <li>Sends your question and the repository or page context to a language model API, which writes the answer: Groq (<a href="https://groq.com" target="_blank" rel="noopener">groq.com</a>) first, and BharatCode (<a href="https://bharatcode.ai" target="_blank" rel="noopener">bharatcode.ai</a>) when Groq is at its limit. If you add your own BharatCode key, your requests go to BharatCode only.</li>
     <li>Keeps generated repo tours and issue search results in a short-lived cache so the next request for the same repository is faster. These hold repository information, not your questions.</li>
     <li>Keeps answers to general questions (the first question in a chat, asked without page or tour context) for up to 14 days, so the next person asking the same thing gets the answer at once. They are stored under a fingerprint of the question's wording, with nothing that identifies who asked.</li>
     <li>Logs how many tokens each request used, to track cost. It doesn't log questions, page text, keys or tokens.</li>

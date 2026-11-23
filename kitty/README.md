@@ -1,6 +1,6 @@
 # Kitty
 
-Kitty is a Chrome extension (Manifest V3) plus a small Hono server. The extension adds a pixel cat to github.com; the server fetches context from GitHub, retrieves matching learning material, and calls BharatCode's `glm-5.3-flash` model.
+Kitty is a Chrome extension (Manifest V3) plus a small Hono server. The extension adds a pixel cat to github.com; the server fetches context from GitHub, retrieves matching learning material, and calls a language model: Qwen 3.8 on Groq first (fast, small free limits), BharatCode's `glm-5.3-flash` when Groq is at its limit.
 
 ## Features
 
@@ -56,7 +56,8 @@ flowchart LR
 
   subgraph OUT["External services"]
     direction TB
-    BC["BharatCode<br/>glm-5.3-flash"]
+    GQ["Groq<br/>qwen3.8-27b"]
+    BC["BharatCode<br/>glm-5.3-flash (backup)"]
     GH["GitHub REST API<br/>repos · issues · PRs · CI logs · code search"]
     CP["GitHub Copilot<br/>(github.com/copilot)"]
   end
@@ -65,7 +66,8 @@ flowchart LR
   SW --> RULES
   AI --> GH
   RULES --> GH
-  AI -- "prompt + retrieved sources" --> BC
+  AI -- "prompt + retrieved sources" --> GQ
+  AI -. "when Groq is at its limit" .-> BC
   CS -. "types the prepared prompt;<br/>you press Enter" .-> CP
 
   classDef ext fill:#dafbe1,stroke:#1a7f37,color:#1f2328
@@ -73,7 +75,7 @@ flowchart LR
   classDef outside fill:#f6f8fa,stroke:#57606a,color:#1f2328
   class CS,SP,SW,LOCAL ext
   class AI,RULES,RAG,GUARD srv
-  class GH,BC,CP outside
+  class GH,GQ,BC,CP outside
   style OUT fill:#f6f8fa,stroke:#57606a,color:#1f2328
   style EXT fill:#f0fff4,stroke:#1a7f37,color:#1a7f37
   style SRV fill:#f0f7ff,stroke:#0969da,color:#0969da
@@ -83,6 +85,7 @@ The cat and the side panel send requests through the service worker, which is th
 
 - **Grounding:** the PDFs and `*/references/` are chunked into `server/data/index.json` at build time. There's no embeddings endpoint, so retrieval is lexical. The tutor has to cite the chunks it uses.
 - **Untrusted input:** repository and page text is fenced off in the prompt, so a README that tries to instruct the model is treated as data.
+- **Two model services:** with `GROQ_API_KEY` set, requests go to Groq first: it starts answering in about a second, but its free plan allows only around 8K tokens a minute and 200K a day. When Groq is at its limit (Kitty then skips it for a minute), a request is too big for it (most tours), or it fails before writing anything, BharatCode answers instead. An answer never mixes the two. `GROQ_MODEL` picks the model; if Groq retires the `qwen/qwen3.8-27b` preview, set it to `llama-3.3-70b-versatile`.
 - **Slow or busy model:** BharatCode's free tier can keep a request in its queue for 2 to 3 minutes before the model starts answering. Kitty waits up to about 4 minutes, shows how long it has been waiting, and doesn't retry a queued request (a retry would start again at the back). 503s are retried after 2, 4 and 8 seconds. While it waits, the chat shows Kitty's saved answer to the closest common question. If it still gets no answer, it falls back to that saved answer; tours fall back to Kitty's own notes for each file.
 - **Repeated questions:** the first question of a chat, asked without page or tour context, is answered once by the model and then served from a cache (memory, plus Upstash Redis when connected) for 14 days, so the next person asking the same thing doesn't wait.
 - **Keys:** the BharatCode key lives on the server. Users can bring their own key, which is sent as `X-Kitty-Key`.
@@ -114,7 +117,7 @@ Load `kitty/extension/dist` as an unpacked extension. A plain `npm run build` po
 - Root directory: `kitty/server`
 - Framework preset: Hono
 - Install command: `cd .. && npm ci -w server --include-workspace-root`
-- Environment: `LLM_PROVIDER=bharatcode`, `BHARATCODE_API_KEY`, optionally `GITHUB_TOKEN` and `RATE_LIMIT_PER_MIN`
+- Environment: `LLM_PROVIDER=bharatcode`, `BHARATCODE_API_KEY`, optionally `GROQ_API_KEY` (and `GROQ_MODEL`), `GITHUB_TOKEN` and `RATE_LIMIT_PER_MIN`
 - Optional shared tour cache: add Upstash Redis from the Vercel Marketplace and connect it to the project. Kitty reads `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`). Without it, tours are cached in memory only.
 
 Then point Kitty at it under Settings → Advanced.
