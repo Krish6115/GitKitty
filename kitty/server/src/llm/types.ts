@@ -42,7 +42,7 @@ export interface ChatResult {
 export type StreamEvent = { type: 'delta'; text: string } | { type: 'done'; result: ChatResult };
 
 export interface Provider {
-  readonly name: 'mock' | 'bharatcode';
+  readonly name: 'mock' | 'bharatcode' | 'groq';
   chat(req: ChatRequest): Promise<ChatResult>;
   stream(req: ChatRequest): AsyncIterable<StreamEvent>;
 }

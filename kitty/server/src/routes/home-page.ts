@@ -41,5 +41,5 @@ export const HOME_HTML = htmlPage(
   <h2>Open source</h2>
   <p>GitKitty is open source. Read the code, report a bug or pick up a good first issue on <a href="https://github.com/Krish6115/GitKitty" target="_blank" rel="noopener">github.com/Krish6115/GitKitty</a>. Stars help other developers find it.</p>
 
-  <footer>Kitty runs on BharatCode's GLM 5.3 Flash model (glm-5.3-flash). Git lessons draw on the Pro Git book (CC BY-NC-SA 3.0) and the official Git documentation. <a href="/privacy">Privacy policy</a></footer>`,
+  <footer>Kitty answers with Qwen 3.8 on Groq, and with BharatCode's GLM 5.3 Flash when Groq is at its limit. Git lessons draw on the Pro Git book (CC BY-NC-SA 3.0) and the official Git documentation. <a href="/privacy">Privacy policy</a></footer>`,
 );

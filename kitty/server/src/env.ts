@@ -6,6 +6,11 @@ export const EnvSchema = z.object({
   BHARATCODE_BASE_URL: z.url().default('https://bharatcode.ai/api/model/v1'),
   BHARATCODE_MODEL: z.string().min(1).default('glm-5.3-flash'),
   BHARATCODE_API_KEY: z.string().optional(),
+  // optional: Groq answers first (fast, small free limits) and BharatCode takes over when Groq can't
+  GROQ_API_KEY: z.string().optional(),
+  GROQ_BASE_URL: z.url().default('https://api.groq.com/openai/v1'),
+  // a preview model on Groq; if Groq retires it, set GROQ_MODEL=llama-3.3-70b-versatile
+  GROQ_MODEL: z.string().min(1).default('qwen/qwen3.8-27b'),
   GITHUB_TOKEN: z.string().optional(),
   RATE_LIMIT_PER_MIN: z.coerce.number().int().positive().default(20),
   // BharatCode's free tier can keep a request in its queue for 2-3 minutes before the first words
