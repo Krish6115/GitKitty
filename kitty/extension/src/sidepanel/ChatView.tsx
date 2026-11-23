@@ -134,6 +134,7 @@ export function ChatView() {
       await postStream('/tutor', { question: q, history, level, ...pageBody, ...(tourCtx ? { tour: tourCtx } : {}) }, (event, data) => {
         const d = data as Record<string, unknown>;
         if (event === 'sources') updateLast((m) => ({ ...m, sources: d.sources as ChatSource[] }));
+        else if (event === 'related') updateLast((m) => ({ ...m, related: { question: String(d.question ?? ''), answer: String(d.answer ?? ''), sources: (d.sources ?? []) as ChatSource[] } }));
         else if (event === 'files') updateLast((m) => ({ ...m, files: { repo: String(d.repo), files: d.files as { path: string; url: string }[] } }));
         else if (event === 'delta') updateLast((m) => ({ ...m, content: m.content + String(d.text ?? '') }));
         else if (event === 'action') {

@@ -18,6 +18,9 @@ export const EnvSchema = z.object({
   KV_REST_API_URL: z.url().optional(),
   KV_REST_API_TOKEN: z.string().optional(),
   TOUR_STORE_TTL_DAYS: z.coerce.number().int().positive().default(30),
+  ANSWER_CACHE_TTL_DAYS: z.coerce.number().int().positive().default(14),
+  // mock model only: delay before its first words, to try out the waiting screens
+  MOCK_DELAY_MS: z.coerce.number().int().min(0).max(300_000).default(0),
   TOUR_MAX_STEPS: z.coerce.number().int().min(4).max(15).default(12),
 });
 

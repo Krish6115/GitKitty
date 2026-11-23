@@ -28,7 +28,7 @@ export function selectProvider(env: Env, userKey: string | undefined, deps: Prov
     });
   let provider: Provider;
   if (key) provider = make(key);
-  else if (env.LLM_PROVIDER === 'mock') provider = createMockProvider();
+  else if (env.LLM_PROVIDER === 'mock') provider = createMockProvider(env.MOCK_DELAY_MS);
   else if (env.BHARATCODE_API_KEY) provider = make(env.BHARATCODE_API_KEY);
   else throw new KittyError('key_required', 'This Kitty server has no BharatCode key. Add your own key in Kitty settings.');
   return { provider: withUsageLogging(provider, deps.logger ?? consoleUsageLogger), byok: Boolean(key) };

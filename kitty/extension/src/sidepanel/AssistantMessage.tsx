@@ -12,6 +12,7 @@ import { SIDEPANEL_TAB_KEY } from '../shared/messages';
 import type { PageContext } from '../shared/page-context';
 import { scenarioFor } from '../shared/practice-scenarios';
 import { openCopilot, runOnPage, Thinking } from './chat-helpers';
+import { WhileYouWait } from './WhileYouWait';
 
 type Assistant = Extract<ChatMessage, { role: 'assistant' }>;
 
@@ -28,6 +29,7 @@ export function AssistantMessage({ m, previous, page }: { m: Assistant; previous
             </p>
           )}
           {m.content ? <Markdown text={stripAction(m.content)} sources={m.sources} /> : m.status === 'streaming' && <Thinking />}
+          {!m.content && m.status === 'streaming' && m.related && <WhileYouWait related={m.related} />}
           {m.status === 'done' && (() => {
             const q = previous;
             const sc = scenarioFor(`${q?.role === 'user' ? q.content : ''} ${m.content.slice(0, 400)}`);
