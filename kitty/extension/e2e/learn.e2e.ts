@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { launch, log, OUT_DIR } from './launch.js';
 
 export async function learnE2E(repo = 'honojs/hono'): Promise<void> {
-  const { ctx, extId } = await launch();
+  const { ctx, sw, extId } = await launch();
   const panel = await ctx.newPage();
   await panel.setViewportSize({ width: 420, height: 900 });
   await panel.goto(`chrome-extension://${extId}/src/sidepanel/index.html`);
@@ -39,6 +39,13 @@ export async function learnE2E(repo = 'honojs/hono'): Promise<void> {
   log(`first PR guide: ${steps} steps`);
   if (steps !== 10) throw new Error('first-PR checklist missing');
   await panel.screenshot({ path: join(OUT_DIR, 'learn-first-pr.png') });
+  // its steps tick themselves from the GitHub tab's URL, which Chrome only reveals with a github.com host permission
+  const gh = await ctx.newPage();
+  await gh.goto(`https://github.com/${repo}`, { waitUntil: 'domcontentloaded' });
+  const urls = await sw.evaluate(async () => (await chrome.tabs.query({})).map((t) => t.url ?? ''));
+  if (!urls.some((u) => u.startsWith(`https://github.com/${repo}`))) throw new Error(`GitHub tab URL not readable: ${JSON.stringify(urls)}`);
+  log('first PR guide can read the GitHub tab URL');
+  await gh.close();
 
   // 4. chat: a pasted Git error is recognised instantly
   await panel.locator('nav.tabs button', { hasText: 'Ask Kitty' }).click();
