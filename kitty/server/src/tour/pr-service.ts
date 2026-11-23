@@ -3,7 +3,7 @@
 import { randomBytes } from 'node:crypto';
 import { untrusted } from '../github/context.js';
 import type { GitHubClient, PullFile } from '../github/client.js';
-import type { LruCache } from '../lib/lru.js';
+import type { TourCache } from '../lib/tour-store.js';
 import { KittyError } from '../llm/errors.js';
 import type { ChatMessage, ChatResult, Provider } from '../llm/types.js';
 import { completedSteps, mergePlannedTour } from './parse.js';
@@ -53,7 +53,7 @@ export function prContext(pr: { number: number; title: string; body: string; bas
   ].filter(Boolean).join('\n\n');
 }
 
-export async function getPrTour(deps: { github: GitHubClient; provider: Provider; cache: LruCache<TourResult> }, req: TourRequest & { pr: number }): Promise<TourResult> {
+export async function getPrTour(deps: { github: GitHubClient; provider: Provider; cache: TourCache }, req: TourRequest & { pr: number }): Promise<TourResult> {
   const { github, provider, cache } = deps;
   const { owner, repo, signal, pr: n } = req;
   const progress = req.onProgress ?? (() => {});
@@ -63,7 +63,7 @@ export async function getPrTour(deps: { github: GitHubClient; provider: Provider
   const sha = pull.head.sha;
   if (!sha) throw new KittyError('upstream_error', 'GitHub did not say which commit this pull request is at.');
   const key = `${owner}/${repo}#pr${n}@${sha}`.toLowerCase();
-  const hit = info.private ? undefined : cache.get(key);
+  const hit = info.private ? undefined : await cache.get(key);
   if (hit) return { ...hit, meta: { ...hit.meta, cached: true } };
 
   progress('ranking', 'Ordering the changed files…');
@@ -104,6 +104,6 @@ export async function getPrTour(deps: { github: GitHubClient; provider: Provider
       defaultBranch: info.default_branch, described: merged.described, pr: prMeta, ...(result ? {} : { modelFailed: true }),
     },
   };
-  if (!info.private && result && merged.described === drafts.length) cache.set(key, out);
+  if (!info.private && result && merged.described === drafts.length) await cache.set(key, out);
   return out;
 }

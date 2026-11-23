@@ -12,6 +12,12 @@ export const EnvSchema = z.object({
   LLM_FIRST_TOKEN_MS: z.coerce.number().int().positive().default(230_000),
   LLM_IDLE_MS: z.coerce.number().int().positive().default(30_000),
   TOUR_CACHE_TTL_MIN: z.coerce.number().int().positive().default(360),
+  // optional shared tour cache (Upstash Redis REST); the KV_ names are what Vercel's Upstash integration sets
+  UPSTASH_REDIS_REST_URL: z.url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  KV_REST_API_URL: z.url().optional(),
+  KV_REST_API_TOKEN: z.string().optional(),
+  TOUR_STORE_TTL_DAYS: z.coerce.number().int().positive().default(30),
   TOUR_MAX_STEPS: z.coerce.number().int().min(4).max(15).default(12),
 });
 

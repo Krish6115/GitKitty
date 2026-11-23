@@ -3,7 +3,7 @@ import type { GitHubClient } from '../github/client.js';
 import { buildTourContext } from '../github/context.js';
 import { draftStep, planSteps, type PlannedStep } from '../github/plan.js';
 import { findDoc, issueHints, rankFiles, topLevelLayout } from '../github/rank.js';
-import type { LruCache } from '../lib/lru.js';
+import type { TourCache } from '../lib/tour-store.js';
 import { KittyError, type KittyErrorCode } from '../llm/errors.js';
 
 /** Model failures a planned tour survives (it falls back to Kitty's own step notes). */
@@ -19,7 +19,7 @@ export type OnProgress = (stage: TourStage, message: string) => void;
 export interface TourServiceDeps {
   github: GitHubClient;
   provider: Provider;
-  cache: LruCache<TourResult>;
+  cache: TourCache;
   maxSteps: number;
 }
 
@@ -114,7 +114,7 @@ export async function getTour(deps: TourServiceDeps, req: TourRequest): Promise<
   if (issue?.pull_request !== undefined) throw new KittyError('bad_request', `#${issue.number} is a pull request, not an issue. Use "Check my PR" there instead.`);
   const sha = await github.getHeadSha(owner, repo, info.default_branch);
   const key = `${owner}/${repo}@${sha}${issue ? `#${issue.number}` : ''}`.toLowerCase();
-  const hit = info.private ? undefined : cache.get(key); // never share private-repo tours between users
+  const hit = info.private ? undefined : await cache.get(key); // never share private-repo tours between users
   if (hit) return { ...hit, meta: { ...hit.meta, cached: true } };
 
   const tree = await github.getTree(owner, repo, sha);
@@ -210,7 +210,7 @@ export async function getTour(deps: TourServiceDeps, req: TourRequest): Promise<
       },
     };
     // only cache tours the model fully explained
-    if (!info.private && !modelFailed && merged.described === drafts.length) cache.set(key, out);
+    if (!info.private && !modelFailed && merged.described === drafts.length) await cache.set(key, out);
     return out;
   }
   // small repos may not have enough candidate files for the usual minimums
@@ -248,6 +248,6 @@ export async function getTour(deps: TourServiceDeps, req: TourRequest): Promise<
       ...(issueMeta ? { issue: issueMeta } : {}),
     },
   };
-  if (!info.private) cache.set(key, out);
+  if (!info.private) await cache.set(key, out);
   return out;
 }

@@ -114,6 +114,7 @@ Load `kitty/extension/dist` as an unpacked extension. A plain `npm run build` po
 - Framework preset: Hono
 - Install command: `cd .. && npm ci -w server --include-workspace-root`
 - Environment: `LLM_PROVIDER=bharatcode`, `BHARATCODE_API_KEY`, optionally `GITHUB_TOKEN` and `RATE_LIMIT_PER_MIN`
+- Optional shared tour cache: add Upstash Redis from the Vercel Marketplace and connect it to the project. Kitty reads `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`). Without it, tours are cached in memory only.
 
 Then point Kitty at it under Settings → Advanced.
 
@@ -128,7 +129,7 @@ Measured on the live model:
 | Saved answer or recognised Git error | 0 | instant |
 | Explain this | ~1k | 5–14 s |
 
-Tours are cached per commit, so touring the same repo again is free.
+Tours are cached per commit, so touring the same repo again is free. With Upstash connected, that cache survives cold starts and every server instance shares it.
 
 ## Credits
 
