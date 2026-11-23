@@ -1,5 +1,5 @@
 // Side panel chat helpers: what's on the active tab, the "thinking" timer, and sending the cat to a page.
-import { useEffect, useState } from 'preact/hooks';
+import { Waiting } from '../shared/Waiting';
 import { actionUrl, PENDING_ACTION_KEY, type PageAction, type PendingAction } from '../shared/actions';
 import type { PageContext, PageContextRequest } from '../shared/page-context';
 import { COPILOT_PENDING_KEY, COPILOT_URL, type CopilotPending } from '../shared/copilot';
@@ -24,20 +24,7 @@ export async function activePageContext(): Promise<PageContext | null> {
   }
 }
 
-/** "Kitty is thinking (12s)", and after 15s an honest note that the AI model is slow right now. */
-export function Thinking() {
-  const [s, setS] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setS((x) => x + 1), 1000);
-    return () => clearInterval(id);
-  }, []);
-  return (
-    <>
-      <p class="thinking">Kitty is thinking{s >= 3 ? ` (${s}s)` : ''}</p>
-      {s >= 15 && <p class="muted small" data-kitty="slow">The model is slow right now. Kitty stops waiting after about 45 seconds.</p>}
-    </>
-  );
-}
+export const Thinking = () => <Waiting label="Kitty is thinking" />;
 
 /** Send the active tab to the action's page; the cat there picks the action up and runs it. */
 export async function runOnPage(action: PageAction): Promise<void> {

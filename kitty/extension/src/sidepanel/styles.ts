@@ -68,6 +68,7 @@ export const css = `
   .error { color: var(--err); }
   .ok { color: #1a7f37; } @media (prefers-color-scheme: dark) { :root:not([data-theme]) .ok { color: #3fb950; } } :root[data-theme="dark"] .ok { color: #3fb950; }
   .welcome { max-width: 560px; margin: 0 auto; } .howto { padding-left: 18px; } .howto li { margin: 4px 0; }
+  .slow { color: var(--muted); font-size: 12px; margin: 2px 0 0; }
   .thinking::after { content: ""; animation: dots 1.2s steps(4) infinite; }
   @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
   .chip { display: block; margin: 6px 0; background: transparent !important; color: var(--fg) !important; text-align: left; }
