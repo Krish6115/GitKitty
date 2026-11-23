@@ -7,6 +7,7 @@ import { getSettings } from '../shared/settings';
 import { ChatView } from './ChatView';
 import { LearnView } from './LearnView';
 import { SettingsView } from './SettingsView';
+import { StarPrompt } from './StarPrompt';
 import { css } from './styles';
 import { WelcomeView } from './WelcomeView';
 
@@ -72,6 +73,7 @@ function SidePanel() {
           <button key={t.id} role="tab" aria-selected={tab === t.id} class={tab === t.id ? 'active' : ''} onClick={() => choose(t.id)}>{t.label}</button>
         ))}
       </nav>
+      <StarPrompt />
       {tab === 'chat' && <ChatView />}
       {tab === 'learn' && <LearnView />}
       {tab === 'settings' && <SettingsView />}

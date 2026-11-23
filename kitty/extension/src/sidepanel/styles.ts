@@ -48,6 +48,8 @@ export const css = `
   .action-card { margin-top: 6px; padding: 6px 8px; border: 1px solid var(--accent-hover); border-radius: 8px; background: rgb(46 160 67 / 0.08); }
   .action-card p { margin: 0 0 4px; } .found { margin: 4px 0 0; padding-left: 18px; } .found li { margin: 0 0 8px; } .found a { color: var(--fg); text-decoration: none; }
   button.small { padding: 1px 8px; font-size: 12px; }
+  .star-prompt { margin: 8px 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .star-prompt p { margin: 0; }
   .msg .about { display: block; font-size: 11px; color: var(--muted); margin-bottom: 2px; }
   .steps code { font-size: 12px; color: var(--muted); word-break: break-all; }
   .pre { white-space: pre-wrap; }

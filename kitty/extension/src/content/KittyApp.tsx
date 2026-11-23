@@ -4,6 +4,7 @@ import { besideBox, CAT_SIZE, guideSpot, viewport } from './cat-motion';
 import { boxOf, findFileHeader, type Box } from './highlight';
 import { PixelCat } from './PixelCat';
 import { useCatMotion } from './useCatMotion';
+import { recordHelp } from '../shared/star-prompt';
 import { useTour } from './useTour';
 import { IssuesView, PreflightView } from './ContributeViews';
 import { useApi } from './useApi';
@@ -134,7 +135,7 @@ export function KittyApp() {
           ) : t.tour.streaming ? (
             <button disabled title="Kitty is still writing the next step">Next</button>
           ) : (
-            <button onClick={() => void t.exit()}>Finish</button>
+            <button onClick={() => { void recordHelp(); void t.exit(); }}>Finish</button>
           )}
           <button class="ghost" data-kitty="ask-step" title="Ask Kitty about this step in the side panel" onClick={() => askAboutStep(n)}>Ask</button>
           <button class="ghost" onClick={() => void t.exit()}>Exit</button>

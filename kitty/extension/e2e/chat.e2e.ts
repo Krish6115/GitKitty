@@ -14,6 +14,8 @@ export async function chatE2E(question = 'How do I undo a commit I already pushe
   log(`cat menu "Ask Kitty": ${(await gh.locator('#kitty-root .hint').count()) ? 'side panel blocked -> toolbar hint shown' : 'side panel opened'}`);
   log('side panel tab requested:', await sw.evaluate(async () => (await chrome.storage.session.get('kitty:sidepanel-tab'))['kitty:sidepanel-tab']));
 
+  // Kitty has already helped twice; this answer makes three, so the one-time star note should appear
+  await sw.evaluate(() => chrome.storage.local.set({ 'kitty:star-prompt': { helped: 2, closed: false } }));
   const panel = await ctx.newPage();
   await panel.goto(`chrome-extension://${extId}/src/sidepanel/index.html`);
   await panel.getByRole('tab', { name: 'Ask Kitty' }).click();
@@ -32,5 +34,11 @@ export async function chatE2E(question = 'How do I undo a commit I already pushe
   log(`inline citations: ${await panel.locator('.msg.kitty a.cite').count()}  sources: ${await panel.locator('.msg.kitty .sources li').count()}  code blocks: ${await panel.locator('.msg.kitty .code pre').count()}`);
   await panel.evaluate(() => document.querySelectorAll('details.sources').forEach((d) => d.setAttribute('open', '')));
   await panel.screenshot({ path: join(OUT_DIR, `${label}.png`), fullPage: true });
+  await panel.locator('[data-kitty="star-prompt"]').waitFor({ timeout: 5_000 });
+  await panel.locator('[data-kitty="star-later"]').click();
+  await panel.reload();
+  await panel.getByRole('tab', { name: 'Ask Kitty' }).waitFor();
+  if (await panel.locator('[data-kitty="star-prompt"]').count()) throw new Error('star note came back after "No thanks"');
+  log('star note: shown after the third answer, gone for good after "No thanks"');
   await ctx.close();
 }

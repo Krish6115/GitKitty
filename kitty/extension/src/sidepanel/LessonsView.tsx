@@ -10,6 +10,7 @@ import { QuizCard, useLocal } from './QuizCard';
 import { Quiz, useSkills } from './LearningPath';
 import { dueSkills } from '../shared/review';
 import { Icon } from '../shared/Icon';
+import { recordHelp } from '../shared/star-prompt';
 
 /** Ask the cited tutor about this skill in the chat tab. */
 const readMore = (question: string): void => {
@@ -60,7 +61,10 @@ function Lesson({ skill, saved, onProgress, onPractice, onBack }: { skill: Skill
           skill={skill}
           onAnswer={(ok) => {
             setReview(answer(review, skill.id, ok));
-            if (ok) setStep(STEPS.length);
+            if (ok) {
+              setStep(STEPS.length);
+              void recordHelp();
+            }
           }}
         />
       )}
