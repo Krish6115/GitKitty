@@ -27,6 +27,8 @@ export type ChatMessage =
       action?: import('./actions').KittyAction;
       /** Repo files Kitty read to answer a question about the code. */
       files?: { repo: string; files: { path: string; url: string }[] };
+      /** While the model is queued: Kitty's saved answer to the closest common question. */
+      related?: { question: string; answer: string; sources: ChatSource[] };
       /** Results of a find_issues action. */
       found?: { status: 'loading' | 'done' | 'error'; issues?: import('./contribute').BeginnerIssue[]; labeled?: boolean; error?: string };
     };

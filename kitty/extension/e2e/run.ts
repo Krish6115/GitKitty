@@ -11,6 +11,7 @@ import { featuresE2E } from './features.e2e.js';
 import { learnE2E } from './learn.e2e.js';
 import { onboardingE2E } from './onboarding.e2e.js';
 import { tourE2E } from './tour.e2e.js';
+import { waitE2E } from './wait.e2e.js';
 
 const args = process.argv.slice(2);
 const opt = (name: string): string | undefined => {
@@ -31,7 +32,10 @@ const suites: Record<string, () => Promise<void>> = {
   explain: () => explainE2E(),
   features: () => featuresE2E(opt('run'), opt('pr')),
   learn: () => learnE2E(opt('repo')),
+  // needs a mock server started with MOCK_DELAY_MS=20000, so it isn't part of "all"
+  wait: () => waitE2E(),
 };
+const ONLY_BY_NAME = new Set(['wait']);
 
 const health = await fetch('http://localhost:8787/health').then((r) => r.json() as Promise<{ provider?: string }>).catch(() => null);
 if (!health && which !== 'cat') {
@@ -43,6 +47,7 @@ if (health) console.log(`server provider: ${health.provider}`);
 let failed = false;
 for (const [name, run] of Object.entries(suites)) {
   if (which !== 'all' && which !== name) continue;
+  if (which === 'all' && ONLY_BY_NAME.has(name)) continue;
   console.log(`\n=== ${name}`);
   try {
     await run();

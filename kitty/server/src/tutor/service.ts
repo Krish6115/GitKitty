@@ -8,6 +8,7 @@ import { tutorMessages } from './prompt.js';
 import { unverifiedFlags } from './verify-flags.js';
 import { parseAction, type KittyAction } from './actions.js';
 import type { FaqMatcher } from './faq.js';
+import { answerKey, type AnswerCache } from './answer-cache.js';
 import { isRepoCodeQuestion, repoOf, type RepoFiles } from '../github/repo-files.js';
 import { worthRewriting } from '../rag/rewrite.js';
 import { diagnose } from './git-errors.js';
@@ -30,6 +31,8 @@ export type TutorEvent =
   | { type: 'action'; action: KittyAction }
   /** Repo files Kitty read to answer a question about the code. */
   | { type: 'files'; repo: string; files: { path: string; url: string }[] }
+  /** While the model is queued: the closest saved answer, shown until the real answer starts. */
+  | { type: 'related'; question: string; answer: string; sources: TutorSource[] }
   /** `instant`: a saved, reviewed answer to a common question (no model call). */
   | { type: 'done'; usage: Usage | null; truncated: boolean; unverifiedFlags: string[]; instant?: boolean; diagnosis?: string };
 
@@ -55,6 +58,8 @@ export interface TutorDeps {
   repoFiles?: (owner: string, repo: string, question: string) => Promise<RepoFiles | null>;
   /** Turns a question into Git search terms when the first search finds nothing close (one small model call). */
   rewrite?: (question: string, signal?: AbortSignal) => Promise<string | null>;
+  /** Earlier answers to the same general question (skips the model). */
+  answers?: AnswerCache;
 }
 
 /** Repo lookups must not hold the answer up for long. */
@@ -97,6 +102,15 @@ export async function* streamTutor(deps: TutorDeps, req: TutorRequest, signal?: 
     yield { type: 'done', usage: null, truncated: false, unverifiedFlags: [], instant: true };
     return;
   }
+  // someone already asked exactly this: answer from the cache instead of waiting in the model's queue
+  const cacheKey = deps.answers ? answerKey(req, history.length) : null;
+  const cached = cacheKey ? await deps.answers?.get(cacheKey) : undefined;
+  if (cached) {
+    yield { type: 'sources', weak: false, sources: cached.sources };
+    yield { type: 'delta', text: cached.answer };
+    yield { type: 'done', usage: null, truncated: false, unverifiedFlags: [], instant: true };
+    return;
+  }
   // questions about the open page need the page, not six Git references: a lighter prompt answers sooner
   const repoFiles = await lookUpRepoFiles(deps, req);
   const aboutPage = Boolean(repoFiles) || (Boolean(req.page) && /(this|here|page|file|repo|repository|project|explain|summar\w*|overview|about)/i.test(req.question));
@@ -109,11 +123,10 @@ export async function* streamTutor(deps: TutorDeps, req: TutorRequest, signal?: 
     if ((better[0]?.score ?? 0) > (chunks[0]?.score ?? 0)) chunks = better;
   }
   const weak = (chunks[0]?.score ?? 0) < WEAK_SCORE;
-  yield {
-    type: 'sources',
-    weak,
-    sources: chunks.map((c, i) => ({ n: i + 1, title: c.title, headingPath: c.headingPath, sourceFile: c.sourceFile, sourceUrl: c.sourceUrl, license: c.license })),
-  };
+  const sources = chunks.map((c, i) => ({ n: i + 1, title: c.title, headingPath: c.headingPath, sourceFile: c.sourceFile, sourceUrl: c.sourceUrl, license: c.license }));
+  yield { type: 'sources', weak, sources };
+  const near = aboutPage ? null : deps.faq?.closest(req.question);
+  if (near) yield { type: 'related', question: near.questions[0] ?? '', answer: near.answer, sources: near.sources };
   if (repoFiles) yield { type: 'files', repo: repoFiles.repo, files: repoFiles.files.map((f) => ({ path: f.path, url: f.url })) };
   const request = {
     kind: 'tutor' as const,
@@ -135,7 +148,9 @@ export async function* streamTutor(deps: TutorDeps, req: TutorRequest, signal?: 
     } else {
       const action = parseAction(answer);
       if (action) yield { type: 'action', action };
-      yield { type: 'done', usage: ev.result.usage, truncated: ev.result.truncated, unverifiedFlags: unverifiedFlags(answer, chunks.map((c) => c.text)) };
+      const flags = unverifiedFlags(answer, chunks.map((c) => c.text));
+      if (cacheKey && !weak && !action && !ev.result.truncated && flags.length === 0 && answer.trim()) await deps.answers?.set(cacheKey, { answer, sources });
+      yield { type: 'done', usage: ev.result.usage, truncated: ev.result.truncated, unverifiedFlags: flags };
     }
   }
   } catch (e) {

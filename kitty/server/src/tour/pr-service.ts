@@ -99,7 +99,7 @@ export async function getPrTour(deps: { github: GitHubClient; provider: Provider
   const out: TourResult = {
     tour,
     meta: {
-      owner, repo, sha, partial: skipped.length > 0, cached: false, provider: provider.name, repaired: false, droppedSteps: merged.ignored,
+      owner, repo, sha, partial: skipped.length > 0, cached: false, provider: provider.name, repaired: false, droppedSteps: merged.ignored, createdAt: new Date().toISOString(),
       usage: result?.usage ?? null, contextTokens: Math.ceil(messages.reduce((a, m) => a + m.content.length, 0) / 4), unreadableFiles: 0,
       defaultBranch: info.default_branch, described: merged.described, pr: prMeta, ...(result ? {} : { modelFailed: true }),
     },

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { Env } from '../env.js';
 import { TourSchema, type TourResult } from '../tour/schema.js';
 import { LruCache } from './lru.js';
+import { createUpstashKv, kvFromEnv, type Kv, type UpstashOptions } from './redis-kv.js';
 
 type MaybePromise<T> = T | Promise<T>;
 
@@ -11,6 +12,8 @@ type MaybePromise<T> = T | Promise<T>;
 export interface TourCache {
   get(key: string): MaybePromise<TourResult | undefined>;
   set(key: string, value: TourResult): MaybePromise<void>;
+  /** The newest repo tour of `owner/repo` (lower case) at any commit. */
+  latest?(repo: string): MaybePromise<TourResult | undefined>;
 }
 
 // a stored tour is checked like any other outside input before it's served
@@ -33,51 +36,56 @@ const StoredTourSchema = z.object({
     pr: z.object({ number: z.number(), title: z.string(), url: z.string() }).optional(),
     described: z.number().optional(),
     modelFailed: z.boolean().optional(),
+    createdAt: z.string().optional(),
+    basedOn: z.string().optional(),
   }),
 }) satisfies z.ZodType<TourResult>;
 
-export interface RedisOptions {
-  url: string;
-  token: string;
+export interface RedisOptions extends UpstashOptions {
   ttlSec: number;
-  fetchImpl?: typeof fetch;
-  /** Called once per failure; the cache then acts as a miss. Never receives the token. */
-  onError?: (message: string) => void;
 }
 
-/** Upstash Redis over its REST API (no client library). Failures count as cache misses. */
+/** Tours in Upstash Redis. Anything read back is validated; failures count as cache misses. */
 export function createRedisTourCache(o: RedisOptions): TourCache {
-  const doFetch = o.fetchImpl ?? fetch;
-  const run = async (command: (string | number)[]): Promise<unknown> => {
-    const res = await doFetch(o.url.replace(/\/+$/, ''), {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${o.token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(command),
-      signal: AbortSignal.timeout(3_000),
-    });
-    if (!res.ok) throw new Error(`Redis responded ${res.status}`);
-    return ((await res.json()) as { result?: unknown }).result;
+  return redisTourCache(createUpstashKv(o), o.ttlSec);
+}
+
+function redisTourCache(kv: Kv, ttlSec: number): TourCache {
+  const read = async (k: string): Promise<TourResult | undefined> => {
+    const raw = await kv.get(k);
+    if (raw === undefined) return undefined;
+    try {
+      const parsed = StoredTourSchema.safeParse(JSON.parse(raw));
+      return parsed.success ? parsed.data : undefined;
+    } catch {
+      return undefined;
+    }
   };
-  const key = (k: string): string => `kitty:tour:${k}`;
   return {
-    async get(k) {
-      try {
-        const raw = await run(['GET', key(k)]);
-        if (typeof raw !== 'string') return undefined;
-        const parsed = StoredTourSchema.safeParse(JSON.parse(raw));
-        return parsed.success ? parsed.data : undefined;
-      } catch (e) {
-        o.onError?.(`tour cache read failed: ${e instanceof Error ? e.message : String(e)}`);
-        return undefined;
-      }
-    },
+    get: (k) => read(`kitty:tour:${k}`),
     async set(k, value) {
-      try {
-        await run(['SET', key(k), JSON.stringify(value), 'EX', o.ttlSec]);
-      } catch (e) {
-        o.onError?.(`tour cache write failed: ${e instanceof Error ? e.message : String(e)}`);
-      }
+      const json = JSON.stringify(value);
+      await kv.set(`kitty:tour:${k}`, json, ttlSec);
+      if (isRepoTour(value)) await kv.set(`kitty:tour-latest:${repoOf(value)}`, json, ttlSec);
     },
+    latest: (repo) => read(`kitty:tour-latest:${repo}`),
+  };
+}
+
+const isRepoTour = (t: TourResult): boolean => !t.meta.issue && !t.meta.pr;
+const repoOf = (t: TourResult): string => `${t.meta.owner}/${t.meta.repo}`.toLowerCase();
+
+/** In memory: tours by key, plus the newest repo tour per repository. */
+export function memoryTourCache(max: number, ttlMs: number): TourCache {
+  const byKey = new LruCache<TourResult>(max, ttlMs);
+  const newest = new LruCache<TourResult>(max, ttlMs);
+  return {
+    get: (k) => byKey.get(k),
+    set(k, value) {
+      byKey.set(k, value);
+      if (isRepoTour(value)) newest.set(repoOf(value), value);
+    },
+    latest: (repo) => newest.get(repo),
   };
 }
 
@@ -95,21 +103,15 @@ export function layeredTourCache(memory: TourCache, shared: TourCache): TourCach
       await memory.set(k, value);
       await shared.set(k, value);
     },
+    async latest(repo) {
+      return (await memory.latest?.(repo)) ?? (await shared.latest?.(repo));
+    },
   };
 }
 
-/** The tour cache for this deployment: Redis-backed when its REST URL and token are set, memory only otherwise. */
+/** The tour cache for this deployment: Redis-backed when it's configured, memory only otherwise. */
 export function tourCacheFromEnv(env: Env, fetchImpl?: typeof fetch): TourCache {
-  const memory = new LruCache<TourResult>(100, env.TOUR_CACHE_TTL_MIN * 60_000);
-  const url = env.UPSTASH_REDIS_REST_URL ?? env.KV_REST_API_URL;
-  const token = env.UPSTASH_REDIS_REST_TOKEN ?? env.KV_REST_API_TOKEN;
-  if (!url || !token) return memory;
-  const redis = createRedisTourCache({
-    url,
-    token,
-    ttlSec: env.TOUR_STORE_TTL_DAYS * 86_400,
-    ...(fetchImpl ? { fetchImpl } : {}),
-    onError: (message) => console.warn(JSON.stringify({ event: 'tour_cache_error', message })),
-  });
-  return layeredTourCache(memory, redis);
+  const memory = memoryTourCache(100, env.TOUR_CACHE_TTL_MIN * 60_000);
+  const kv = kvFromEnv(env, fetchImpl);
+  return kv ? layeredTourCache(memory, redisTourCache(kv, env.TOUR_STORE_TTL_DAYS * 86_400)) : memory;
 }

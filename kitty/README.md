@@ -83,7 +83,8 @@ The cat and the side panel send requests through the service worker, which is th
 
 - **Grounding:** the PDFs and `*/references/` are chunked into `server/data/index.json` at build time. There's no embeddings endpoint, so retrieval is lexical. The tutor has to cite the chunks it uses.
 - **Untrusted input:** repository and page text is fenced off in the prompt, so a README that tries to instruct the model is treated as data.
-- **Slow or busy model:** BharatCode's free tier can keep a request in its queue for 2 to 3 minutes before the model starts answering. Kitty waits up to about 4 minutes, shows how long it has been waiting, and doesn't retry a queued request (a retry would start again at the back). 503s are retried after 2, 4 and 8 seconds. If the chat still gets no answer, it falls back to the closest saved answer; tours fall back to Kitty's own notes for each file.
+- **Slow or busy model:** BharatCode's free tier can keep a request in its queue for 2 to 3 minutes before the model starts answering. Kitty waits up to about 4 minutes, shows how long it has been waiting, and doesn't retry a queued request (a retry would start again at the back). 503s are retried after 2, 4 and 8 seconds. While it waits, the chat shows Kitty's saved answer to the closest common question. If it still gets no answer, it falls back to that saved answer; tours fall back to Kitty's own notes for each file.
+- **Repeated questions:** the first question of a chat, asked without page or tour context, is answered once by the model and then served from a cache (memory, plus Upstash Redis when connected) for 14 days, so the next person asking the same thing doesn't wait.
 - **Keys:** the BharatCode key lives on the server. Users can bring their own key, which is sent as `X-Kitty-Key`.
 - **GitHub token:** optional. With `GITHUB_TOKEN` set (a classic token with the `public_repo` scope), the server gets higher rate limits, code search, and full CI logs. Without it, CI explanations only see GitHub's summary.
 
@@ -129,7 +130,7 @@ Measured on the live model:
 | Saved answer or recognised Git error | 0 | instant |
 | Explain this | ~1k | 5–14 s |
 
-Tours are cached per commit, so touring the same repo again is free. With Upstash connected, that cache survives cold starts and every server instance shares it.
+Tours are cached per commit, so touring the same repo again is free. With Upstash connected, that cache survives cold starts and every server instance shares it. A tour from the last 14 days is reused for a newer commit as long as every file it visits still exists, and a weekly GitHub Actions job (`warm-tours`) tours the repositories in `server/scripts/popular-repos.json` so their tours are ready before anyone asks.
 
 ## Credits
 

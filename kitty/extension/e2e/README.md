@@ -23,6 +23,7 @@ npm run e2e -w extension -- all  # or a single suite, e.g. tour
 | `explain` | Selecting a git command shows the pill, the explanation streams, follow-up and the (simulated) right-click path work. |
 | `features` | "Why did this fail?" on a failed CI run (`--run owner/repo/actions/runs/N`), a PR tour, the AI context copy, the PR description draft and the quiz. |
 | `learn` | Practice mode, a lesson, the first-PR checklist, a pasted Git error, the Fork button hint, a show-me-how walkthrough and the Copilot hand-off. |
+| `wait` | The waiting screens while the model is queued: a saved answer to a similar question, the queue note with the own-key tip, then the real answer. Not part of `all`: start the server with `LLM_PROVIDER=mock MOCK_DELAY_MS=20000`. |
 
 **Browser:** branded Chrome no longer loads unpacked extensions from the command line, so a Playwright Chromium is used.
 Install one with `npx playwright install chromium`, or point `KITTY_E2E_CHROME` at a Chromium executable.

@@ -45,7 +45,7 @@ describe('POST /tour', () => {
     const first = createApp(env, { githubFetch: fakeGitHubFetch(f), logger: silent, storeFetch: upstash });
     const made = (await events(await post(first, { owner: f.owner, repo: f.repo }))).at(-1);
     expect(made?.data).toMatchObject({ meta: { cached: false } });
-    expect(stored.size).toBe(1);
+    expect([...stored.keys()].map((k) => k.replace(/@.*/, '@sha'))).toEqual(['kitty:tour:acme/todo-api@sha', 'kitty:tour-latest:acme/todo-api']);
     // a new instance has an empty memory cache, but the tour is still there
     const fresh = createApp(env, { githubFetch: fakeGitHubFetch(f), logger: silent, storeFetch: upstash });
     const again = (await events(await post(fresh, { owner: f.owner, repo: f.repo }))).at(-1);

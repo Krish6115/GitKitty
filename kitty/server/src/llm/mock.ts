@@ -73,7 +73,8 @@ function answer(req: ChatRequest): string {
   return mockTutor(lastUser);
 }
 
-export function createMockProvider(): Provider {
+/** `delayMs` holds back the first words, like a queued real model (for trying out Kitty's waiting screens). */
+export function createMockProvider(delayMs = 0): Provider {
   const run = (req: ChatRequest): ChatResult => {
     const text = answer(req);
     const promptTokens = estimate(req.messages.map((m) => m.content).join('\n'));
@@ -91,6 +92,7 @@ export function createMockProvider(): Provider {
     chat: async (req) => run(req),
     async *stream(req): AsyncGenerator<StreamEvent> {
       const result = run(req);
+      if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
       for (let i = 0; i < result.text.length; i += 64) yield { type: 'delta', text: result.text.slice(i, i + 64) };
       yield { type: 'done', result };
     },

@@ -1,0 +1,35 @@
+name: warm-tours
+
+# Once a week, tour popular repositories through the live Kitty server so their tours are cached (in Upstash Redis)
+# before anyone asks. Runs at a quiet hour because BharatCode serves one request per key at a time.
+# The list is kitty/server/scripts/popular-repos.json. Run it by hand from the Actions tab after changing the list.
+
+on:
+  schedule:
+    - cron: '30 21 * * 6' # Sunday 03:00 IST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: warm-tours
+  cancel-in-progress: false
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: kitty
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: kitty/package-lock.json
+      - run: npm ci
+      - name: Tour popular repositories
+        run: npm run warm-tours -w server

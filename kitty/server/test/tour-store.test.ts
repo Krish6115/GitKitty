@@ -62,7 +62,7 @@ describe('tour store', () => {
     const cache = createRedisTourCache({ url: 'https://redis.example', token: 'secret', ttlSec: 60, fetchImpl: fakeUpstash({ fail: true }).fetchImpl, onError: (m) => errors.push(m) });
     await expect(cache.set('k', tour)).resolves.toBeUndefined();
     expect(await cache.get('k')).toBeUndefined();
-    expect(errors).toHaveLength(2);
+    expect(errors).toHaveLength(3); // the tour, the repo's newest-tour entry, and the read
     expect(errors.join(' ')).not.toContain('secret');
   });
 
@@ -87,7 +87,7 @@ describe('tour store', () => {
 
     const vercel = tourCacheFromEnv(loadEnv({ KV_REST_API_URL: 'https://redis.example', KV_REST_API_TOKEN: 't' }), up.fetchImpl);
     await vercel.set('k', tour);
-    expect(up.calls).toHaveLength(1);
+    expect(up.calls.map((c) => c.command[1])).toEqual(['kitty:tour:k', 'kitty:tour-latest:acme/todo-api']);
     expect(up.calls[0]?.command[4]).toBe(30 * 86_400);
   });
 });

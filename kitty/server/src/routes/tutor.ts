@@ -6,6 +6,7 @@ import type { RateLimiter } from '../lib/rate-limit.js';
 import { retrieve as defaultRetrieve, type RetrievedChunk } from '../rag/retrieve.js';
 import { TutorRequestSchema } from '../tutor/history.js';
 import { getFaqMatcher, type FaqMatcher } from '../tutor/faq.js';
+import { answerCacheFromEnv } from '../tutor/answer-cache.js';
 import { streamTutor } from '../tutor/service.js';
 import { guard, sendEvent, withPings, type RouteDeps } from './common.js';
 import { createGitHubClient } from '../github/client.js';
@@ -20,6 +21,7 @@ export interface TutorRouteDeps extends RouteDeps {
 
 export function tutorRoute(env: Env, limiter: RateLimiter, deps: TutorRouteDeps = {}): Hono {
   const route = new Hono();
+  const answers = answerCacheFromEnv(env, deps.storeFetch);
   route.post('/tutor', async (c) => {
     const body = TutorRequestSchema.safeParse(await c.req.json().catch(() => null));
     if (!body.success) return c.json({ code: 'bad_request', message: 'Expected {"question": string (1-2000 chars), "history"?: [...]}.' }, 400);
@@ -33,7 +35,7 @@ export function tutorRoute(env: Env, limiter: RateLimiter, deps: TutorRouteDeps 
 
     return streamSSE(c, (stream) =>
       withPings(stream, deps.keepAliveMs ?? 10_000, async () => {
-        for await (const ev of streamTutor({ provider: g.provider, retrieve, repoFiles, rewrite: (q, s) => rewriteQuery(g.provider, q, s), ...(faq ? { faq } : {}) }, body.data, c.req.raw.signal)) {
+        for await (const ev of streamTutor({ provider: g.provider, retrieve, repoFiles, rewrite: (q, s) => rewriteQuery(g.provider, q, s), answers, ...(faq ? { faq } : {}) }, body.data, c.req.raw.signal)) {
           if (ev.type === 'delta') await sendEvent(stream, 'delta', { text: ev.text });
           else await sendEvent(stream, ev.type, ev);
         }
