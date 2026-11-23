@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T08:11:50.583Z",
+  "generatedAt": "2026-11-23T07:55:31.132Z",
   "model": "glm-5.3-flash",
   "entries": [
     {
@@ -1501,6 +1501,836 @@
           ],
           "sourceFile": "Scenario-Based_Guide/references/removing-sensitive-data.md",
           "sourceUrl": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository",
+          "license": "CC BY 4.0"
+        }
+      ]
+    },
+    {
+      "id": "switch-branch",
+      "questions": [
+        "How do I switch to another branch?",
+        "git switch vs git checkout",
+        "How do I move to a different branch?"
+      ],
+      "answer": "**Situation:** You want to move from your current branch to a different existing branch in your repo.\n\n**Commands:**\n```bash\ngit checkout branch-name   # switch to an existing branch\n```\n\n**Why:** `git checkout <branch>` moves `HEAD` to point at that branch [1]. It also resets your working directory's files to look like they did at the last commit on that branch — if Git can't do that cleanly (e.g., you have uncommitted conflicting changes), it won't let you switch [1][2].\n\nA couple of handy related variants from the sources:\n- `git checkout -b hotfix` — create *and* switch to a new branch in one step [2]\n- `git checkout serverfix` — if the name matches exactly one remote branch, Git creates a local tracking branch automatically [4]\n\nIf your project uses submodules, prefer `git checkout --recurse-submodules <branch>` so submodules end up in the right state [3].\n\n**How to undo:** Just switch back: `git checkout master` (or whatever branch you came from) [1].",
+      "sources": [
+        {
+          "n": 1,
+          "title": "Branches and merging",
+          "headingPath": [
+            "Branches in a Nutshell",
+            "Switching Branches"
+          ],
+          "sourceFile": "Git/references/branches-and-merging.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 2,
+          "title": "Branches and merging",
+          "headingPath": [
+            "Basic Branching and Merging",
+            "Basic Branching"
+          ],
+          "sourceFile": "Git/references/branches-and-merging.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 3,
+          "title": "Submodules",
+          "headingPath": [
+            "Submodules",
+            "Issues with Submodules",
+            "Switching branches"
+          ],
+          "sourceFile": "Git/references/submodules.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Submodules",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 4,
+          "title": "Remotes and remote-tracking branches",
+          "headingPath": [
+            "Remote Branches",
+            "Tracking Branches"
+          ],
+          "sourceFile": "Git/references/remotes-and-tracking-branches.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Branching-Remote-Branches",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 5,
+          "title": "GIT CHEAT SHEET",
+          "headingPath": [
+            "Education"
+          ],
+          "sourceFile": "Git/git-cheat-sheet-education.pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Git/git-cheat-sheet-education.pdf",
+          "license": "CC BY 4.0 (GitHub Education cheat sheet, github/training-kit)"
+        },
+        {
+          "n": 6,
+          "title": "Branch protection rules and rulesets",
+          "headingPath": [
+            "About protected branches",
+            "About branch protection settings",
+            "Require signed commits"
+          ],
+          "sourceFile": "Git/references/branch-protection-and-rulesets.md",
+          "sourceUrl": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+          "license": "CC BY 4.0"
+        }
+      ]
+    },
+    {
+      "id": "update-branch-from-main",
+      "questions": [
+        "How do I update my branch with the latest main?",
+        "bring main changes into my feature branch",
+        "My branch is behind main, how do I catch up?"
+      ],
+      "answer": "**Situation:** Your pull request branch is behind `main` and you want to bring in the latest changes before merging.\n\n**Commands:**\n```bash\n# From the PR page (easiest): scroll to the merge section and click\n# \"Update branch\" to merge main into your branch, or use the dropdown\n# and choose \"Update with rebase\" > \"Rebase branch\" for a linear history [1]\n\n# Or from the terminal, merge latest main into your branch:\ngit checkout main\ngit pull origin main\ngit checkout feature/your-branch\ngit merge main\n```\n\n**Why:** Keeping your branch up to date catches conflicts and test failures early, before merging [1]. GitHub offers both a merge (traditional, keeps a merge commit) and a rebase option (linear history without a merge commit) directly from the PR page when your branch is behind and there are no conflicts [1]. Note the `Update branch` button may not appear if your branch is protected, and if changes on `main` cause conflicts, you'll need to resolve those first [1].\n\n**How to undo:** If you merged and want to go back, you can reset your branch to before the merge — but if you rebased instead, you'd need to force-push to restore. Be cautious with force-pushing on shared branches.",
+      "sources": [
+        {
+          "n": 1,
+          "title": "Updating a pull request after review",
+          "headingPath": [
+            "Keeping your pull request in sync with the base branch"
+          ],
+          "sourceFile": "Scenario-Based_Guide/references/updating-a-pr-after-review.md",
+          "sourceUrl": "https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/keeping-your-pull-request-in-sync-with-the-base-branch",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 2,
+          "title": "Git & GitHub Real-World Scenarios",
+          "headingPath": [
+            "Scenario 08: Team Feature Branch Workflow"
+          ],
+          "sourceFile": "Scenario-Based_Guide/git_scenarios.pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Scenario-Based_Guide/git_scenarios.pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 3,
+          "title": "Branch protection rules and rulesets",
+          "headingPath": [
+            "About protected branches",
+            "About branch protection settings",
+            "Require merge queue"
+          ],
+          "sourceFile": "Git/references/branch-protection-and-rulesets.md",
+          "sourceUrl": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 4,
+          "title": "Branch protection rules and rulesets",
+          "headingPath": [
+            "About protected branches",
+            "About branch protection settings",
+            "Require pull request reviews before merging"
+          ],
+          "sourceFile": "Git/references/branch-protection-and-rulesets.md",
+          "sourceUrl": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 5,
+          "title": "Git & GitHub Real-World Scenarios",
+          "headingPath": [
+            "Scenario 03: Working with Branches"
+          ],
+          "sourceFile": "Scenario-Based_Guide/git_scenarios.pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Scenario-Based_Guide/git_scenarios.pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 6,
+          "title": "Updating a pull request after review",
+          "headingPath": [
+            "Committing changes to a pull request branch created from a fork"
+          ],
+          "sourceFile": "Scenario-Based_Guide/references/updating-a-pr-after-review.md",
+          "sourceUrl": "https://docs.github.com/en/pull-requests/how-tos/commit-changes/committing-changes-to-a-pull-request-branch-created-from-a-fork",
+          "license": "CC BY 4.0"
+        }
+      ]
+    },
+    {
+      "id": "detached-head",
+      "questions": [
+        "What does detached HEAD mean and how do I fix it?",
+        "I'm in detached HEAD state",
+        "How do I get out of detached HEAD?"
+      ],
+      "answer": "**Situation:** You've checked out a commit, tag, or remote branch instead of a branch, and Git now says you're in \"detached HEAD\" state — you want to know what that means and how to get back to normal.\n\n**Commands:**\n```bash\ngit checkout main      # go back to a branch (use your branch name)\n# or, if you made commits while detached and want to keep them:\ngit checkout -b my-new-branch   # create a branch at your current detached HEAD\n```\n\n**Why:** Normally HEAD is a symbolic reference pointing at a branch, so new commits land on that branch [1][3]. But if you check out a tag, a commit, or a remote branch, HEAD holds a raw SHA-1 instead — that's detached HEAD [1]. You can still make commits in this state, but nothing points to them, so they can be lost when you switch branches. `git checkout -b` creates a real branch right where you are, so your work has something holding onto it. (Checking what branch you're on is easy with `git symbolic-ref HEAD`, which shows the ref HEAD points at [1].)\n\n**How to undo:** If you haven't made any commits worth keeping, simply checking out your branch again (e.g. `git checkout main`) is all it takes — detached HEAD isn't broken, just a heads-up that you're not on a branch.",
+      "sources": [
+        {
+          "n": 1,
+          "title": "Git internals: objects, refs and HEAD",
+          "headingPath": [
+            "Git References",
+            "The HEAD"
+          ],
+          "sourceFile": "Git/references/git-internals.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Internals-Git-References",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 2,
+          "title": "Reset demystified: HEAD, index and working tree",
+          "headingPath": [
+            "Reset Demystified",
+            "The Role of Reset",
+            "Step 1: Move HEAD"
+          ],
+          "sourceFile": "Git/references/reset-demystified.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 3,
+          "title": "Reset demystified: HEAD, index and working tree",
+          "headingPath": [
+            "Reset Demystified"
+          ],
+          "sourceFile": "Git/references/reset-demystified.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 4,
+          "title": "Git internals: objects, refs and HEAD",
+          "headingPath": [
+            "Git Objects",
+            "Commit Objects"
+          ],
+          "sourceFile": "Git/references/git-internals.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 5,
+          "title": "Worktrees: several branches checked out at once",
+          "headingPath": [
+            "`git worktree` manual (excerpt)",
+            "Options"
+          ],
+          "sourceFile": "Git/references/worktrees.md",
+          "sourceUrl": "https://git-scm.com/docs/git-worktree",
+          "license": "GPL-2.0"
+        },
+        {
+          "n": 6,
+          "title": "Branches and merging",
+          "headingPath": [
+            "Basic Branching and Merging",
+            "Basic Merge Conflicts"
+          ],
+          "sourceFile": "Git/references/branches-and-merging.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging",
+          "license": "CC BY-NC-SA 3.0"
+        }
+      ]
+    },
+    {
+      "id": "undo-merge",
+      "questions": [
+        "How do I undo a merge?",
+        "revert a merge commit",
+        "I merged the wrong branch, how do I undo it?"
+      ],
+      "answer": "**Situation:** You've merged (or a merge is in progress) and want to undo it — the right command depends on whether you've already committed/pushed the merge.\n\n**Commands:**\n```bash\n# Merge in progress, conflicts not resolved yet — abort the whole merge\ngit merge --abort\n\n# Merge committed LOCALLY (not pushed) — move the branch back before the merge\ngit reset HEAD~1 --hard        # warning: discards the merge commit and its changes\n\n# Merge already PUSHED to a shared branch — add an inverse commit (safe)\ngit revert -m 1 <merge-commit-hash>\n\n# If you later want those changes back: revert the revert, then re-merge\ngit revert <revert-commit-hash>\ngit merge topic\n```\n\n**Why:** `git merge --abort` resets the index to HEAD and cleans the working tree, putting you back exactly where you were before the conflicted merge started [6]. If the merge is already committed, `git reset HEAD~1` moves the branch pointer back — but never use this on commits teammates have pulled [1][3]. For pushed merges, `git revert -m 1` creates a new commit that undoes the merge without rewriting history; the `-m 1` flag says parent #1 (your current branch) is the mainline to keep [2][3]. One gotcha: after reverting a merge, Git will think the branch is \"already up-to-date\" if you try to merge it again — fix this by reverting the revert, then merging [2].\n\n**How to undo:** A revert can itself be reverted with `git revert <hash>` [3]. If you used `reset --hard` by mistake, run `git reflog` immediately and recover the commit with `git branch <name> <hash>` [1][5].",
+      "sources": [
+        {
+          "n": 1,
+          "title": "Git & GitHub Real-World Scenarios",
+          "headingPath": [
+            "Scenario 06: Undoing Mistakes"
+          ],
+          "sourceFile": "Scenario-Based_Guide/git_scenarios.pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Scenario-Based_Guide/git_scenarios.pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 2,
+          "title": "Advanced merging and conflict resolution",
+          "headingPath": [
+            "Advanced Merging",
+            "Undoing Merges",
+            "Reverse the commit"
+          ],
+          "sourceFile": "Git/references/advanced-merging-and-conflicts.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Advanced-Merging",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 3,
+          "title": "Git & GitHub Advanced Topics",
+          "headingPath": [
+            "03. git revert"
+          ],
+          "sourceFile": "Git/git_missing_topics(other than 101,notes,cheatsheet).pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Git/git_missing_topics(other%20than%20101%2Cnotes%2Ccheatsheet).pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 4,
+          "title": "Git & GitHub Real-World Scenarios",
+          "headingPath": [
+            "Scenario : Master Quick Reference"
+          ],
+          "sourceFile": "Scenario-Based_Guide/git_scenarios.pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Scenario-Based_Guide/git_scenarios.pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 5,
+          "title": "Git & GitHub Advanced Topics",
+          "headingPath": [],
+          "sourceFile": "Git/git_missing_topics(other than 101,notes,cheatsheet).pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Git/git_missing_topics(other%20than%20101%2Cnotes%2Ccheatsheet).pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 6,
+          "title": "Advanced merging and conflict resolution",
+          "headingPath": [
+            "`git merge` manual (excerpt)",
+            "How conflicts are presented"
+          ],
+          "sourceFile": "Git/references/advanced-merging-and-conflicts.md",
+          "sourceUrl": "https://git-scm.com/docs/git-merge",
+          "license": "GPL-2.0"
+        }
+      ]
+    },
+    {
+      "id": "abort-merge-rebase",
+      "questions": [
+        "How do I cancel a merge or rebase that is in progress?",
+        "git merge --abort and git rebase --abort",
+        "How do I stop a rebase halfway?"
+      ],
+      "answer": "**Situation:** You've started a merge or rebase and want to back out completely before finishing it.\n\n**Commands:**\n```bash\ngit merge --abort      # undo an in-progress merge, return to pre-merge state\ngit rebase --abort     # undo an in-progress rebase, return your branch to exactly how it was before the rebase started\n```\n\n**Why:** Both commands restore your branch to the state it was in before the operation started. For a rebase, Git explicitly returns you \"to your branch's state as it was before `git rebase` was called\" [2]. If you hit a conflict mid-rebase, those are your three choices: fix it and run `git rebase --continue`, skip the commit with `git rebase --skip`, or abort entirely — and aborting is the safe option if you just want out [2].\n\n**How to undo:** Nothing to undo — these commands *are* the undo. One caveat: if you abort a rebase and want to double-check you're back where you started, `git log` will show your original history [2].",
+      "sources": [
+        {
+          "n": 1,
+          "title": "Rebasing and rewriting history",
+          "headingPath": [
+            "Rebasing",
+            "Rebase vs. Merge"
+          ],
+          "sourceFile": "Git/references/rebasing.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Branching-Rebasing",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 2,
+          "title": "Resolving conflicts during a rebase",
+          "headingPath": [
+            "Resolving merge conflicts after a Git rebase"
+          ],
+          "sourceFile": "Scenario-Based_Guide/references/resolving-conflicts-during-rebase.md",
+          "sourceUrl": "https://docs.github.com/en/get-started/using-git/resolving-merge-conflicts-after-a-git-rebase",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 3,
+          "title": "Rebasing and rewriting history",
+          "headingPath": [
+            "Rebasing",
+            "The Perils of Rebasing"
+          ],
+          "sourceFile": "Git/references/rebasing.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Branching-Rebasing",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 4,
+          "title": "Git & GitHub Notes (illustrated): pull, push, merge, rebase, cherry-pick, log",
+          "headingPath": [
+            "git merge"
+          ],
+          "sourceFile": "Git/Git_Github Notes.pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Git/Git_Github%20Notes.pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 5,
+          "title": "Resolving conflicts during a rebase",
+          "headingPath": [
+            "`git rebase` manual (excerpt)",
+            "Description"
+          ],
+          "sourceFile": "Scenario-Based_Guide/references/resolving-conflicts-during-rebase.md",
+          "sourceUrl": "https://git-scm.com/docs/git-rebase",
+          "license": "GPL-2.0"
+        },
+        {
+          "n": 6,
+          "title": "Advanced merging and conflict resolution",
+          "headingPath": [
+            "Advanced Merging",
+            "Undoing Merges",
+            "Reverse the commit"
+          ],
+          "sourceFile": "Git/references/advanced-merging-and-conflicts.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Advanced-Merging",
+          "license": "CC BY-NC-SA 3.0"
+        }
+      ]
+    },
+    {
+      "id": "edit-older-commit",
+      "questions": [
+        "How do I edit an older commit?",
+        "change a commit that isn't the latest",
+        "How do I use interactive rebase to fix a commit?"
+      ],
+      "answer": "**Situation:** You want to change the message (or content) of a commit that's further back in your history, not just the last one.\n\n**Commands:**\n```bash\ngit rebase -i HEAD~3   # interactive rebase of the last 3 commits\n```\n\n**Why:** For anything older than the last commit, Git doesn't have a simple \"modify\" tool — you use an interactive rebase [6]. In the editor that opens, change `pick` to `reword` for commits whose message you want to edit, or `edit` to stop and amend the content; the commands available are listed in the rebase message itself [5]. Git will stop at each marked commit so you can make your changes.\n\nIf it's actually the *last* commit you want to change, that's simpler: stage your changes and run `git commit --amend` (or `git commit --amend --no-edit` if the message is fine) [6].\n\n**How to undo:** If the rebase gets messy, you can reset back to where you were before starting it. Important caution: rewriting history changes the SHA-1 of the commits, so don't amend or rebase commits you've already pushed and shared with others [6].",
+      "sources": [
+        {
+          "n": 1,
+          "title": "Signing commits and tags",
+          "headingPath": [
+            "About commit signature verification",
+            "About commit signature verification",
+            "Default statuses"
+          ],
+          "sourceFile": "Git/references/commit-signing.md",
+          "sourceUrl": "https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 2,
+          "title": "Git hooks",
+          "headingPath": [
+            "Git Hooks",
+            "Client-Side Hooks",
+            "Committing-Workflow Hooks"
+          ],
+          "sourceFile": "Git/references/hooks.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 3,
+          "title": "Git hooks",
+          "headingPath": [
+            "`githooks` manual (excerpt)",
+            "Description",
+            "commit-msg"
+          ],
+          "sourceFile": "Git/references/hooks.md",
+          "sourceUrl": "https://git-scm.com/docs/githooks",
+          "license": "GPL-2.0"
+        },
+        {
+          "n": 4,
+          "title": "Signing commits and tags",
+          "headingPath": [
+            "Signing commits"
+          ],
+          "sourceFile": "Git/references/commit-signing.md",
+          "sourceUrl": "https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 5,
+          "title": "Rebasing and rewriting history",
+          "headingPath": [
+            "Rewriting History",
+            "Squashing Commits"
+          ],
+          "sourceFile": "Git/references/rebasing.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 6,
+          "title": "Rebasing and rewriting history",
+          "headingPath": [
+            "Rewriting History",
+            "Changing the Last Commit"
+          ],
+          "sourceFile": "Git/references/rebasing.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History",
+          "license": "CC BY-NC-SA 3.0"
+        }
+      ]
+    },
+    {
+      "id": "clean-untracked",
+      "questions": [
+        "How do I remove untracked files?",
+        "git clean untracked files and folders",
+        "How do I delete files Git isn't tracking?"
+      ],
+      "answer": "**Situation:** You have untracked files cluttering your working directory and want to delete them with `git clean` — carefully, since this is not undoable [1][3].\n\n**Commands:**\n```bash\ngit status -s          # see what's untracked first\ngit clean -n -d        # dry run: preview what WOULD be removed (always do this first)\ngit clean -f -d        # actually remove untracked files AND empty directories\n```\n\n**Why:** `git clean` removes files Git isn't tracking, and deleted files usually can't be recovered — so always preview with `-n` (or `--dry-run`) first, then swap `-n` for `-f` to actually delete [1][3]. `-d` also removes untracked directories [1]. By default, files ignored via `.gitignore` are kept; add `-x` if you want those removed too (e.g., for a fully clean build) [1][3]. A safer alternative if you might want the files back is `git stash --all`, which removes them but saves them in a stash [1]. You can also use `-i` for interactive mode to confirm each file [1][3].\n\n**How to undo:** You generally can't undo `git clean` [1][3] — that's why the dry run matters. If you used `git stash --all` instead, restore with `git stash pop` (applies and drops the stash) [2].",
+      "sources": [
+        {
+          "n": 1,
+          "title": "Stashing and cleaning",
+          "headingPath": [
+            "Stashing and Cleaning",
+            "Cleaning your Working Directory"
+          ],
+          "sourceFile": "Git/references/stashing-and-cleaning.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Stashing-and-Cleaning",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 2,
+          "title": "Stashing and cleaning",
+          "headingPath": [
+            "Stashing and Cleaning",
+            "Stashing Your Work"
+          ],
+          "sourceFile": "Git/references/stashing-and-cleaning.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Stashing-and-Cleaning",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 3,
+          "title": "Git & GitHub Advanced Topics",
+          "headingPath": [
+            "09. git clean"
+          ],
+          "sourceFile": "Git/git_missing_topics(other than 101,notes,cheatsheet).pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Git/git_missing_topics(other%20than%20101%2Cnotes%2Ccheatsheet).pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 4,
+          "title": "Removing sensitive data (leaked secrets) from a repository",
+          "headingPath": [
+            "Removing sensitive data from a repository",
+            "Purging a file from your local repository's history using git-filter-repo"
+          ],
+          "sourceFile": "Scenario-Based_Guide/references/removing-sensitive-data.md",
+          "sourceUrl": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 5,
+          "title": "Removing sensitive data (leaked secrets) from a repository",
+          "headingPath": [
+            "Removing sensitive data from a repository",
+            "About sensitive data exposure"
+          ],
+          "sourceFile": "Scenario-Based_Guide/references/removing-sensitive-data.md",
+          "sourceUrl": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 6,
+          "title": "Submodules",
+          "headingPath": [
+            "Submodules",
+            "Issues with Submodules"
+          ],
+          "sourceFile": "Git/references/submodules.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Submodules",
+          "license": "CC BY-NC-SA 3.0"
+        }
+      ]
+    },
+    {
+      "id": "tags",
+      "questions": [
+        "How do I create and push a tag?",
+        "git tag a release version",
+        "How do I delete a tag?"
+      ],
+      "answer": "**Situation:** You want to mark a version (like v1.0.0) with a tag and publish it to GitHub.\n\n**Commands:**\n```bash\ngit tag -a v1.0.0 -m \"Version 1.0.0 — First stable release\"  # create an annotated tag (recommended)\ngit tag                                                       # list tags to confirm\ngit show v1.0.0                                               # see tag details\ngit push origin v1.0.0                                        # push the tag (tags don't push automatically)\n```\n\n**Why:** An annotated tag stores the tagger, date, and message, making it the recommended choice for official releases [3]. Tags are fixed pointers to a commit, unlike branches [3]. Crucially, tags do **not** travel with `git push` — you must push them explicitly with `git push origin v1.0.0` (or `git push origin --tags` for all local tags) [2][3].\n\n**How to undo:** Delete the local tag with `git tag -d v1.0.0`, and the remote one with `git push origin --delete v1.0.0` [3].\n\nOne note: pushing a tag only publishes the tag under GitHub's **Tags** section — it does **not** create a Release [1]. For a Release with notes, use `gh release create v1.0.0 --title \"v1.0.0\" --notes \"...\"` [1][2].",
+      "sources": [
+        {
+          "n": 1,
+          "title": "Corrections to common Git & GitHub misconceptions",
+          "headingPath": [
+            "Does pushing a tag create a GitHub release?"
+          ],
+          "sourceFile": "kitty/ingest/corrections.md",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/kitty/ingest/corrections.md",
+          "license": "Kitty project (corrections; links official docs)"
+        },
+        {
+          "n": 2,
+          "title": "Git & GitHub Real-World Scenarios",
+          "headingPath": [
+            "Scenario 09: Tagging & Releasing Versions"
+          ],
+          "sourceFile": "Scenario-Based_Guide/git_scenarios.pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Scenario-Based_Guide/git_scenarios.pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 3,
+          "title": "Git & GitHub Advanced Topics",
+          "headingPath": [
+            "05. git tag"
+          ],
+          "sourceFile": "Git/git_missing_topics(other than 101,notes,cheatsheet).pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Git/git_missing_topics(other%20than%20101%2Cnotes%2Ccheatsheet).pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 4,
+          "title": "Git internals: objects, refs and HEAD",
+          "headingPath": [
+            "Git References",
+            "Tags"
+          ],
+          "sourceFile": "Git/references/git-internals.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Internals-Git-References",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 5,
+          "title": "Signing commits and tags",
+          "headingPath": [
+            "Signing Your Work",
+            "Verifying Tags"
+          ],
+          "sourceFile": "Git/references/commit-signing.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 6,
+          "title": "Signing commits and tags",
+          "headingPath": [
+            "Signing commits"
+          ],
+          "sourceFile": "Git/references/commit-signing.md",
+          "sourceUrl": "https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits",
+          "license": "CC BY 4.0"
+        }
+      ]
+    },
+    {
+      "id": "bisect",
+      "questions": [
+        "How do I find which commit introduced a bug?",
+        "git bisect step by step",
+        "Something broke and I don't know which commit did it"
+      ],
+      "answer": "**Situation:** A bug appeared somewhere in your commit history and you want to find the exact commit that introduced it.\n\n**Commands:**\n```bash\ngit bisect start          # begin a bisect session\ngit bisect bad            # mark current commit as broken\ngit bisect good v1.0      # mark a known-good commit (e.g., last good tag)\n# Git checks out a middle commit — test it, then:\ngit bisect bad            # if the bug is present\ngit bisect good           # if the bug is absent\n# Repeat until Git prints: \"abc1234 is the first bad commit\"\ngit bisect reset          # return to your original branch when done\n```\n\n**Why:** `git bisect` performs a binary search through your history, testing the middle commit each round and eliminating half the suspects every step — so even hundreds of commits can be narrowed down in ~8 steps [1][2]. If you have an automated test, you can skip the manual stepping entirely:\n\n```bash\ngit bisect start HEAD v1.0\ngit bisect run python test_login.py   # exit 0 = good, 1 = bad\n```\n\nThis lets Git test every candidate commit for you while you grab coffee [1].\n\n**How to undo:** Always finish with `git bisect reset` — it returns you to the branch/commit you were on before bisecting [1][2]. Once you know the culprit commit, `git show <hash>` lets you inspect exactly what it changed [2].",
+      "sources": [
+        {
+          "n": 1,
+          "title": "Git & GitHub Advanced Topics",
+          "headingPath": [
+            "06. git bisect"
+          ],
+          "sourceFile": "Git/git_missing_topics(other than 101,notes,cheatsheet).pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Git/git_missing_topics(other%20than%20101%2Cnotes%2Ccheatsheet).pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 2,
+          "title": "Git & GitHub Real-World Scenarios",
+          "headingPath": [
+            "Scenario 10: Advanced: Cherry-pick & Bisect"
+          ],
+          "sourceFile": "Scenario-Based_Guide/git_scenarios.pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Scenario-Based_Guide/git_scenarios.pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 3,
+          "title": "Contributing to an open source project",
+          "headingPath": [
+            "Finding ways to contribute to open source on GitHub",
+            "Finding ways to contribute"
+          ],
+          "sourceFile": "Scenario-Based_Guide/references/contributing-to-open-source.md",
+          "sourceUrl": "https://docs.github.com/en/get-started/exploring-projects-on-github/finding-ways-to-contribute-to-open-source-on-github",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 4,
+          "title": "Signing commits and tags",
+          "headingPath": [
+            "Signing Your Work",
+            "Verifying Tags"
+          ],
+          "sourceFile": "Git/references/commit-signing.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 5,
+          "title": "Git hooks",
+          "headingPath": [
+            "`githooks` manual (excerpt)",
+            "Description",
+            "pre-commit"
+          ],
+          "sourceFile": "Git/references/hooks.md",
+          "sourceUrl": "https://git-scm.com/docs/githooks",
+          "license": "GPL-2.0"
+        },
+        {
+          "n": 6,
+          "title": "Signing commits and tags",
+          "headingPath": [
+            "Signing commits"
+          ],
+          "sourceFile": "Git/references/commit-signing.md",
+          "sourceUrl": "https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits",
+          "license": "CC BY 4.0"
+        }
+      ]
+    },
+    {
+      "id": "commit-message",
+      "questions": [
+        "How do I write a good commit message?",
+        "commit message conventions",
+        "What are Conventional Commits?"
+      ],
+      "answer": "**Situation:** You want to write commit messages that are clear and easy for collaborators (and future you) to read.\n\n**Commands:**\n```bash\ngit commit            # opens your editor — write the message using the template below\ngit log --no-merges   # browse well-formatted commit messages for inspiration [1]\n```\n\n**Why:** A good commit message starts with a single summary line of about 50 characters or less, capitalized and written in the imperative (\"Fix bug\", not \"Fixed bug\"). Then add a blank line, followed by a more detailed explanation wrapped to about 72 characters. The blank line between the summary and body is critical — tools like rebase get confused without it. If relevant, the detailed explanation should cover your motivation for the change and how it differs from the previous behavior. Bullet points are fine in the body, using a hyphen or asterisk with a hanging indent. Here's the recommended template [1]:\n\n```text\nCapitalized, short (50 chars or less) summary\n\nMore detailed explanatory text, if necessary.  Wrap it to about 72\ncharacters or so.\n\nFurther paragraphs come after blank lines.\n\n- Bullet points are okay, too\n```\n\nIf you want to enforce this style on future commits, a `commit-msg` hook can validate the message before the commit is allowed through [2].\n\n**How to undo:** If the message was your last commit and hasn't been pushed, fix it with `git commit --amend` to rewrite it [6]. For older messages, use an interactive rebase and change `pick` to `reword` for the commits you want to edit — but never rewrite commits you've already pushed [5].",
+      "sources": [
+        {
+          "n": 1,
+          "title": "Contributing to an open source project",
+          "headingPath": [
+            "Contributing to a Project",
+            "Commit Guidelines"
+          ],
+          "sourceFile": "Scenario-Based_Guide/references/contributing-to-open-source.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 2,
+          "title": "Git hooks",
+          "headingPath": [
+            "Git Hooks",
+            "Client-Side Hooks",
+            "Committing-Workflow Hooks"
+          ],
+          "sourceFile": "Git/references/hooks.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 3,
+          "title": "Signing commits and tags",
+          "headingPath": [
+            "Signing Your Work",
+            "Signing Commits"
+          ],
+          "sourceFile": "Git/references/commit-signing.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 4,
+          "title": "Git internals: objects, refs and HEAD",
+          "headingPath": [
+            "Git Objects",
+            "Commit Objects"
+          ],
+          "sourceFile": "Git/references/git-internals.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 5,
+          "title": "Rebasing and rewriting history",
+          "headingPath": [
+            "Rewriting History",
+            "Changing Multiple Commit Messages"
+          ],
+          "sourceFile": "Git/references/rebasing.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History",
+          "license": "CC BY-NC-SA 3.0"
+        },
+        {
+          "n": 6,
+          "title": "Rebasing and rewriting history",
+          "headingPath": [
+            "Rewriting History"
+          ],
+          "sourceFile": "Git/references/rebasing.md",
+          "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History",
+          "license": "CC BY-NC-SA 3.0"
+        }
+      ]
+    },
+    {
+      "id": "github-actions",
+      "questions": [
+        "What is GitHub Actions and how do I add a workflow?",
+        "create a CI workflow on GitHub",
+        "How do I run tests automatically on every push?"
+      ],
+      "answer": "**Situation:** You want to know what GitHub Actions is and how to add your first workflow to a repository.\n\nGitHub Actions is GitHub's built-in CI/CD platform: it lets you automate building, testing, and deploying your code — for example, running tests on every push or deploying merged PRs [1]. Workflows are YAML files in `.github/workflows/` that can trigger on push, PR, or a schedule [2][3].\n\n**Commands:** There are two easy ways to add one:\n\nOption A — via the GitHub UI (no terminal needed):\n1. In your repo, create a file at `.github/workflows/github-actions-demo.yml`\n2. Paste this starter workflow [2]:\n\n```yaml\nname: GitHub Actions Demo\nrun-name: ${{ github.actor }} is testing out GitHub Actions\non: [push]\njobs:\n  Explore-GitHub-Actions:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo \"The job was automatically triggered by a ${{ github.event_name }} event.\"\n      - run: echo \"This job is now running on a ${{ runner.os }} server hosted by GitHub!\"\n      - name: Check out repository code\n        uses: actions/checkout@v6\n      - run: echo \"This job's status is ${{ job.status }}.\"\n```\n\n3. Click **Commit changes** — committing to a branch triggers the `push` event and runs the workflow [2]\n\nOption B — from the terminal:\n\n```bash\nmkdir -p .github/workflows          # create the workflows folder\n# add your YAML file to .github/workflows/\ngit add .github/workflows/          # stage the workflow file\ngit commit -m \"ci: add GitHub Actions demo workflow\"\ngit push origin main                # push triggers the workflow\ngh run list                         # list recent workflow runs\ngh run watch                        # watch the run live\n```\n\n**Why:** The `on: [push]` key means the workflow runs every time you push [2][3]. GitHub also offers preconfigured templates in the [actions/starter-workflows](https://github.com/actions/starter-workflows) repo — CI, deployments, code scanning, and more — which GitHub suggests automatically based on your code [1]. `gh run list` and `gh run watch` let you monitor runs from the terminal [5]. Runs are free on public repos [3].\n\n**How to undo:** Delete the YAML file from `.github/workflows/` and commit/push the removal.",
+      "sources": [
+        {
+          "n": 1,
+          "title": "GitHub Actions basics",
+          "headingPath": [
+            "Quickstart for GitHub Actions"
+          ],
+          "sourceFile": "Git/references/github-actions-basics.md",
+          "sourceUrl": "https://docs.github.com/en/actions/get-started/quickstart",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 2,
+          "title": "GitHub Actions basics",
+          "headingPath": [
+            "Quickstart for GitHub Actions",
+            "Creating your first workflow"
+          ],
+          "sourceFile": "Git/references/github-actions-basics.md",
+          "sourceUrl": "https://docs.github.com/en/actions/get-started/quickstart",
+          "license": "CC BY 4.0"
+        },
+        {
+          "n": 3,
+          "title": "Git & GitHub Advanced Topics",
+          "headingPath": [
+            "14. GitHub Platform Features"
+          ],
+          "sourceFile": "Git/git_missing_topics(other than 101,notes,cheatsheet).pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Git/git_missing_topics(other%20than%20101%2Cnotes%2Ccheatsheet).pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 4,
+          "title": "Git & GitHub Real-World Scenarios",
+          "headingPath": [
+            "Scenario 08: Team Feature Branch Workflow"
+          ],
+          "sourceFile": "Scenario-Based_Guide/git_scenarios.pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Scenario-Based_Guide/git_scenarios.pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 5,
+          "title": "Git & GitHub Advanced Topics",
+          "headingPath": [
+            "12. GitHub CLI (gh)"
+          ],
+          "sourceFile": "Git/git_missing_topics(other than 101,notes,cheatsheet).pdf",
+          "sourceUrl": "https://github.com/Krish6115/GitKitty/blob/main/Git/git_missing_topics(other%20than%20101%2Cnotes%2Ccheatsheet).pdf",
+          "license": "Repository author"
+        },
+        {
+          "n": 6,
+          "title": "Authentication: HTTPS, SSH, tokens and credential storage",
+          "headingPath": [
+            "About authentication to GitHub"
+          ],
+          "sourceFile": "Git/references/authentication-ssh-and-tokens.md",
+          "sourceUrl": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-authentication-to-github",
           "license": "CC BY 4.0"
         }
       ]
