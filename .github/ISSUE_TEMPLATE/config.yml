@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question
+    url: https://github.com/Krish6115/GitKitty/discussions/categories/q-a
+    about: Stuck installing or using Kitty? Ask in Discussions.
+  - name: Install Kitty
+    url: https://kitty-server.vercel.app
+    about: Download the latest version and the install steps.

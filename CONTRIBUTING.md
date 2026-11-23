@@ -24,7 +24,9 @@ Then open a pull request against `main`. Every PR needs a review from the mainta
 
 ## Working on Kitty
 
-Setup is in [kitty/README.md](kitty/README.md). Before opening a PR, run:
+Setup is in [kitty/README.md](kitty/README.md). To skip local setup, open the repo in a Codespace (Code > Codespaces > Create codespace): dependencies install automatically and the server runs with the mock model, so no API key is needed.
+
+Before opening a PR, run:
 
 ```bash
 cd kitty

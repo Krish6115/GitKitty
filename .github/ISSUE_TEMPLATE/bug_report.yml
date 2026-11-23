@@ -1,0 +1,35 @@
+name: Bug report
+description: Kitty did something wrong or broke on a GitHub page.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what Kitty did instead.
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: GitHub page
+      description: The URL you were on, if it matters (a public repo, issue or PR).
+      placeholder: https://github.com/owner/repo/pull/123
+  - type: input
+    id: version
+    attributes:
+      label: Kitty version
+      description: Shown on Kitty's card in chrome://extensions.
+      placeholder: "0.9.0"
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 131 on Windows 11
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshot or error text
+      description: A screenshot of Kitty's bubble or side panel helps a lot. Don't paste API keys or tokens.
