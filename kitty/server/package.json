@@ -16,7 +16,8 @@
     "live-tour": "tsx scripts/live-tour.ts",
     "live-tutor": "tsx scripts/live-tutor.ts",
     "live-explain": "tsx scripts/live-explain.ts",
-    "build-faq": "tsx scripts/build-faq.ts"
+    "build-faq": "tsx scripts/build-faq.ts",
+    "warm-tours": "tsx scripts/warm-tours.ts"
   },
   "dependencies": {
     "@hono/node-server": "2.1.5",

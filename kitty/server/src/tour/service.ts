@@ -52,6 +52,10 @@ export interface TourStart {
 }
 
 /** How many steps a repo needs: small repos get a short tour, very large ones a longer one. */
+/** How old a tour of an earlier commit may be and still be offered for a newer one. */
+export const RECENT_TOUR_DAYS = 14;
+const isRecent = (t: TourResult, now = Date.now()): boolean => Boolean(t.meta.createdAt) && now - Date.parse(t.meta.createdAt ?? '') < RECENT_TOUR_DAYS * 86_400_000;
+
 export function stepsFor(fileCount: number): number {
   if (fileCount <= 40) return 5;
   if (fileCount <= 400) return 7;
@@ -118,6 +122,14 @@ export async function getTour(deps: TourServiceDeps, req: TourRequest): Promise<
   if (hit) return { ...hit, meta: { ...hit.meta, cached: true } };
 
   const tree = await github.getTree(owner, repo, sha);
+  // busy repos get new commits every day: a recent tour of an earlier commit still fits if all its files still exist
+  if (mode === 'repo' && !info.private && cache.latest) {
+    const recent = await cache.latest(`${owner}/${repo}`.toLowerCase());
+    const files = new Set(tree.tree.map((e) => e.path));
+    if (recent && isRecent(recent) && recent.meta.sha !== sha && recent.tour.steps.every((s) => files.has(s.path))) {
+      return { ...recent, meta: { ...recent.meta, sha, cached: true, basedOn: recent.meta.sha } };
+    }
+  }
   const fileCount = tree.tree.filter((e) => e.type === 'blob').length;
   // the step count fits the repo; huge truncated trees count as very large
   const maxSteps = mode === 'issue' ? Math.min(deps.maxSteps, ISSUE_MAX_STEPS) : Math.min(deps.maxSteps, stepsFor(tree.truncated ? 100_000 : fileCount));
@@ -207,6 +219,7 @@ export async function getTour(deps: TourServiceDeps, req: TourRequest): Promise<
         owner, repo, sha, partial: tree.truncated, cached: false, provider: provider.name, repaired: false,
         droppedSteps: merged.ignored, usage, contextTokens: ctx.approxTokens, unreadableFiles,
         defaultBranch: info.default_branch, described: merged.described, ...(modelFailed ? { modelFailed } : {}),
+        createdAt: new Date().toISOString(),
       },
     };
     // only cache tours the model fully explained
@@ -238,6 +251,7 @@ export async function getTour(deps: TourServiceDeps, req: TourRequest): Promise<
       owner, repo, sha,
       partial: tree.truncated,
       cached: false,
+      createdAt: new Date().toISOString(),
       provider: provider.name,
       repaired,
       droppedSteps: checked.dropped,
